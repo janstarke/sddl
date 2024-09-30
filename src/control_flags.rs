@@ -1,7 +1,11 @@
+use binrw::BinRead;
+use binrw::BinReaderExt;
+use binrw::BinWrite;
+use binrw::BinWriterExt;
 use bitflags::bitflags;
 
 bitflags! {
-    /// <https://github.com/microsoft/referencesource/blob/master/mscorlib/system/security/accesscontrol/securitydescriptor.cs>    
+    /// <https://github.com/microsoft/referencesource/blob/master/mscorlib/system/security/accesscontrol/securitydescriptor.cs>
     pub struct ControlFlags: u16 {
         const None                                = 0x0000;
         const OwnerDefaulted                      = 0x0001; // set by RM only
@@ -20,5 +24,32 @@ bitflags! {
         const SystemAclProtected                  = 0x2000; // when set, RM will stop inheriting
         const RMControlValid                      = 0x4000; // the reserved 8 bits have some meaning
         const SelfRelative                        = 0x8000; // must always be on
+    }
+}
+
+impl BinRead for ControlFlags {
+    type Args<'a> = ();
+
+    fn read_options<R: std::io::Read + std::io::Seek>(
+        reader: &mut R,
+        endian: binrw::Endian,
+        args: Self::Args<'_>,
+    ) -> binrw::BinResult<Self> {
+        let raw_value: u16 = reader.read_type_args(endian, args)?;
+        Ok(ControlFlags::from_bits(raw_value).unwrap())
+    }
+}
+
+impl BinWrite for ControlFlags {
+    type Args<'a> = ();
+
+    fn write_options<W: std::io::Write + std::io::Seek>(
+        &self,
+        writer: &mut W,
+        endian: binrw::Endian,
+        args: Self::Args<'_>,
+    ) -> binrw::BinResult<()> {
+        let raw_value = self.bits();
+        writer.write_type_args(&raw_value, endian, args)
     }
 }
