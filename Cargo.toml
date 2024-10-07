@@ -1,7 +1,14 @@
 [package]
 name = "sddl"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+authors = ["Jan Starke <jan.starke@posteo.de>"]
+license = "GPL-3.0"
+readme = "README.md"
+documentation = "https://docs.rs/sddl"
+repository = "https://github.com/janstarke/sddl"
+description = "a library to parse and analyse SDDL Strings"
+
 
 [dependencies]
 binrw = "0.14.0"
