@@ -6,6 +6,7 @@ use bitflags::bitflags;
 
 bitflags! {
     /// <https://github.com/microsoft/referencesource/blob/master/mscorlib/system/security/accesscontrol/securitydescriptor.cs>
+    #[derive(Eq, PartialEq)]
     pub struct ControlFlags: u16 {
         const None                                = 0x0000;
         const OwnerDefaulted                      = 0x0001; // set by RM only
