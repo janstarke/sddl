@@ -6,7 +6,7 @@ use bitflags::bitflags;
 
 bitflags! {
     /// <https://github.com/microsoft/referencesource/blob/master/mscorlib/system/security/accesscontrol/securitydescriptor.cs>
-    #[derive(Eq, PartialEq)]
+    #[derive(Eq, PartialEq, Debug, Copy, Clone)]
     pub struct ControlFlags: u16 {
         const None                                = 0x0000;
         const OwnerDefaulted                      = 0x0001; // set by RM only
@@ -33,10 +33,10 @@ impl BinRead for ControlFlags {
 
     fn read_options<R: std::io::Read + std::io::Seek>(
         reader: &mut R,
-        endian: binrw::Endian,
+        _endian: binrw::Endian,
         args: Self::Args<'_>,
     ) -> binrw::BinResult<Self> {
-        let raw_value: u16 = reader.read_type_args(endian, args)?;
+        let raw_value: u16 = reader.read_le_args(args)?;
         Ok(ControlFlags::from_bits(raw_value).unwrap())
     }
 }
@@ -47,10 +47,10 @@ impl BinWrite for ControlFlags {
     fn write_options<W: std::io::Write + std::io::Seek>(
         &self,
         writer: &mut W,
-        endian: binrw::Endian,
+        _endian: binrw::Endian,
         args: Self::Args<'_>,
     ) -> binrw::BinResult<()> {
         let raw_value = self.bits();
-        writer.write_type_args(&raw_value, endian, args)
+        writer.write_le_args(&raw_value, args)
     }
 }

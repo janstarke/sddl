@@ -12,7 +12,6 @@ pub struct SecurityDescriptor {
     #[bw(assert(*revision == 1))]
     revision: u8,
     
-    #[br(ignore)]
     #[getset(skip)]
     _reserved1: u8,
 

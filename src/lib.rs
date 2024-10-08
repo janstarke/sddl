@@ -8,7 +8,7 @@
 //! ```rust
 //! use std::io::Cursor;
 //! use binrw::BinReaderExt;
-//! use sddl::SecurityDescriptor;
+//! use sddl::{ControlFlags, SecurityDescriptor};
 //! 
 //! let mut binary_data = Cursor::new([0x01, 0x00, 0x14, 0xb0, 0x90, 0x00, 0x00,
 //!     0x00, 0xa0, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00,
@@ -27,6 +27,12 @@
 //!     0x00, 0x00, 0x00, 0x00, 0x05, 0x20, 0x00, 0x00, 0x00, 0x20, 0x02, 0x00,
 //!     0x00]);
 //! let security_descriptor: SecurityDescriptor = binary_data.read_le().unwrap();
+//! println!("{:?}", security_descriptor.flags());
+//! assert!(security_descriptor.flags().contains(ControlFlags::DiscretionaryAclPresent));
+//! assert!(security_descriptor.flags().contains(ControlFlags::SystemAclPresent));
+//! assert!(security_descriptor.flags().contains(ControlFlags::DiscretionaryAclProtected));
+//! assert!(security_descriptor.flags().contains(ControlFlags::SystemAclProtected));
+//! assert!(security_descriptor.flags().contains(ControlFlags::SelfRelative));
 //! ``` 
 mod control_flags;
 mod security_descriptor;
