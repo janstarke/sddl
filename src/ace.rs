@@ -1,4 +1,4 @@
-use std::mem;
+use std::{fmt::Display, mem};
 
 use binrw::binrw;
 use getset::Getters;
@@ -275,7 +275,7 @@ pub enum AceData {
         /// right, or a type of child object. The purpose of this GUID depends
         /// on the user rights specified in the Mask field. This field is valid
         /// only if the ACE_OBJECT_TYPE_PRESENT bit is set in the Flags field.
-        /// Otherwise, the ObjectType field is ignored. 
+        /// Otherwise, the ObjectType field is ignored.
         object_type: Guid,
 
         /// A GUID that identifies the type of child object that can inherit the
@@ -362,7 +362,7 @@ pub enum AceData {
         /// type of child object. The purpose of this GUID depends on the user
         /// rights specified in the Mask field. This field is valid only if the
         /// ACE_OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise,
-        /// the ObjectType field is ignored. 
+        /// the ObjectType field is ignored.
         object_type: Guid,
 
         /// A GUID that identifies the type of child object that can inherit the
@@ -417,4 +417,10 @@ pub enum AceData {
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
     },
+}
+
+impl Display for Ace {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
 }

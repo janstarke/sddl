@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use binrw::{binread, BinRead, FilePtr};
 use getset::Getters;
 
@@ -44,5 +46,67 @@ impl BinRead for Offset {
     ) -> binrw::BinResult<Self> {
         let offset = reader.stream_position()?;
         Ok(Self(offset))
+    }
+}
+
+impl SecurityDescriptor {
+    pub fn owner(&self) -> &Sid {
+        &self.owner_ref.value
+    }
+
+    pub fn group(&self) -> &Sid {
+        &self.group_ref.value
+    }
+
+    pub fn sacl(&self) -> &Acl {
+        &self.sacl_ref.value
+    }
+
+    pub fn dacl(&self) -> &Acl {
+        &self.dacl_ref.value
+    }
+
+    pub fn sacl_as_string(&self) -> Option<String> {
+        if self.flags().contains(ControlFlags::SystemAclPresent) {
+            let mut flags = String::with_capacity(32);
+            if self.flags().contains(ControlFlags::SystemAclProtected) {
+                flags.push('P');
+            }
+            if self.flags().contains(ControlFlags::SystemAclAutoInheritRequired) {
+                flags.push_str("AR");
+            }
+            if self.flags().contains(ControlFlags::SystemAclAutoInherited) {
+                flags.push_str("AI");
+            }
+            let aces = self.sacl();
+            Some(format!("S:{flags}{aces}"))
+        } else {
+            None
+        }
+    }
+
+    pub fn dacl_as_string(&self) -> Option<String> {
+        if self.flags().contains(ControlFlags::DiscretionaryAclPresent) {
+            let mut flags = String::with_capacity(32);
+            if self.flags().contains(ControlFlags::DiscretionaryAclProtected) {
+                flags.push('P');
+            }
+            if self.flags().contains(ControlFlags::DiscretionaryAclAutoInheritRequired) {
+                flags.push_str("AR");
+            }
+            if self.flags().contains(ControlFlags::DiscretionaryAclAutoInherited) {
+                flags.push_str("AI");
+            }
+            let aces = self.sacl();
+            Some(format!("D:{flags}{aces}"))
+        } else {
+            None
+        }
+    }
+}
+
+impl Display for SecurityDescriptor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
     }
 }

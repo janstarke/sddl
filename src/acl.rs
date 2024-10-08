@@ -1,5 +1,9 @@
+use std::fmt::Display;
+
 use binrw::binrw;
 use getset::Getters;
+
+use crate::Ace;
 
 /// The ACL structure is the header of an access control list (ACL). A complete
 /// ACL consists of an ACL structure followed by an ordered list of zero or more
@@ -32,5 +36,18 @@ pub struct Acl {
 
     /// Specifies two zero-bytes of padding that align the ACL structure on a
     /// 32-bit boundary.
-    _sbz2: u16
+    _sbz2: u16,
+
+    #[br(count=ace_count)]
+    ace_list: Vec<Ace>,
+}
+
+impl Display for Acl {
+    /// <https://learn.microsoft.com/de-de/windows/win32/secauthz/security-descriptor-string-format>
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for ace in self.ace_list() {
+            write!(f, "({ace})")?;
+        }
+        Ok(())
+    }
 }
