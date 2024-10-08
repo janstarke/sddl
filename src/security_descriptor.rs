@@ -19,16 +19,16 @@ pub struct SecurityDescriptor {
 
     flags: ControlFlags,
 
-    #[brw(big, offset=sd_offset.0)]
+    #[brw(little, offset=sd_offset.0)]
     owner_ref: FilePtr<u32, Sid>,
 
-    #[brw(big, offset=sd_offset.0)]
+    #[brw(little, offset=sd_offset.0)]
     group_ref: FilePtr<u32, Sid>,
 
-    #[brw(big, offset=sd_offset.0)]
+    #[brw(little, offset=sd_offset.0)]
     sacl_ref: FilePtr<u32, Acl>,
 
-    #[brw(big, offset=sd_offset.0)]
+    #[brw(little, offset=sd_offset.0)]
     dacl_ref: FilePtr<u32, Acl>,
 }
 
