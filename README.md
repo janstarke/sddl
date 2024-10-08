@@ -1,5 +1,8 @@
 # sddl
 
+![GitHub License](https://img.shields.io/github/license/janstarke/sddl)
+[![Crates.io Version](https://img.shields.io/crates/v/sddl)](https://crates.io/crates/sddl)
+
 `sddl` is a library created to forensically analyze Windows Security Descriptors
 
 ## Usage example
