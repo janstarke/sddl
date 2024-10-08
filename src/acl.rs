@@ -13,17 +13,19 @@ use crate::Ace;
 #[binrw]
 #[derive(Eq, PartialEq, Getters)]
 #[getset(get="pub")]
+#[brw(little)]
 pub struct Acl {
 
     /// Specifies the revision level of the ACL. This value should be
     /// ACL_REVISION, unless the ACL contains an object-specific ACE, in which
     /// case this value must be ACL_REVISION_DS. All ACEs in an ACL must be at
     /// the same revision level.
-    acl_revision: u8,
+    acl_revision: AclRevision,
 
     /// Specifies a zero byte of padding that aligns the AclRevision member on a
     /// 16-bit boundary.
-    #[brw(ignore)]
+    #[br(temp)]
+    #[bw(calc(0))]
     #[getset(skip)]
     _sbz1: u8,
 
@@ -36,9 +38,12 @@ pub struct Acl {
 
     /// Specifies two zero-bytes of padding that align the ACL structure on a
     /// 32-bit boundary.
+    #[br(temp)]
+    #[bw(calc(0))]
+    #[getset(skip)]
     _sbz2: u16,
 
-    #[br(count=ace_count)]
+    #[br(args { inner: (acl_revision,) }, count=ace_count)]
     ace_list: Vec<Ace>,
 }
 
@@ -50,4 +55,22 @@ impl Display for Acl {
         }
         Ok(())
     }
+}
+
+#[binrw]
+#[derive(Eq, PartialEq, Clone, Copy, Default)]
+#[allow(non_camel_case_types)]
+#[brw(repr=u8)]
+pub enum AclRevision {
+    /// When set to 0x02, only AceTypes 0x00, 0x01, 0x02, 0x03, 0x11, 0x12, and
+    /// 0x13 can be present in the ACL. An AceType of 0x11 is used for SACLs but
+    /// not for DACLs. For more information about ACE types, see section
+    /// 2.4.4.1.
+    #[default]
+    ACL_REVISION = 0x02,
+
+    /// When set to 0x04, AceTypes 0x05, 0x06, 0x07, 0x08, and 0x11 are allowed.
+    /// ACLs of revision 0x04 are applicable only to directory service objects.
+    /// An AceType of 0x11 is used for SACLs but not for DACLs.
+    ACL_REVISION_DS = 0x04,
 }

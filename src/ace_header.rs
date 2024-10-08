@@ -3,11 +3,30 @@ use bitflags::bitflags;
 use getset::Getters;
 use strum::Display;
 
+use crate::AclRevision;
+
 #[binrw]
+#[brw(import(acl_revision: AclRevision))]
 #[derive(Eq, PartialEq, Getters, Clone, Copy)]
 #[getset(get = "pub")]
 pub struct AceHeader {
     /// An unsigned 8-bit integer that specifies the ACE types.
+    #[br(assert(match acl_revision {
+        AclRevision::ACL_REVISION => 
+            ace_type == AceType::ACCESS_ALLOWED_ACE_TYPE ||
+            ace_type == AceType::ACCESS_DENIED_ACE_TYPE ||
+            ace_type == AceType::SYSTEM_AUDIT_ACE_TYPE ||
+            ace_type == AceType::SYSTEM_ALARM_ACE_TYPE || 
+            ace_type == AceType::SYSTEM_MANDATORY_LABEL_ACE_TYPE || 
+            ace_type == AceType::SYSTEM_RESOURCE_ATTRIBUTE_ACE_TYPE || 
+            ace_type == AceType::SYSTEM_SCOPED_POLICY_ID_ACE_TYPE,
+        AclRevision::ACL_REVISION_DS => 
+            ace_type == AceType::ACCESS_ALLOWED_OBJECT_ACE_TYPE ||
+            ace_type == AceType::ACCESS_DENIED_OBJECT_ACE_TYPE ||
+            ace_type == AceType::SYSTEM_AUDIT_OBJECT_ACE_TYPE ||
+            ace_type == AceType::SYSTEM_ALARM_OBJECT_ACE_TYPE || 
+            ace_type == AceType::SYSTEM_MANDATORY_LABEL_ACE_TYPE
+    }))]
     ace_type: AceType,
 
     /// An unsigned 8-bit integer that specifies a set of ACE type-specific

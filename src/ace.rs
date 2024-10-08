@@ -3,13 +3,15 @@ use std::{fmt::Display, mem};
 use binrw::binrw;
 use getset::Getters;
 
-use crate::{AccessMask, AceHeader, AceType, AdsAccessMask, Guid, MandatoryAccessMask, Sid};
+use crate::{AccessMask, AceHeader, AceType, AclRevision, AdsAccessMask, Guid, MandatoryAccessMask, Sid};
 
 /// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586
 #[binrw]
+#[brw(import(acl_revision: AclRevision))]
 #[derive(Eq, PartialEq, Getters)]
 #[getset(get = "pub")]
 pub struct Ace {
+    #[br(args(acl_revision))]
     header: AceHeader,
 
     mask: AccessMask,
@@ -184,7 +186,8 @@ pub enum AceData {
 
         /// Optional application data. The size of the application data is
         /// determined by the AceSize field of the ACE_HEADER.
-        #[br(count=*header.ace_size() as usize - (mem::size_of::<Guid>() + mem::size_of::<Guid>() + sid.len()))]
+        #[br(err_context("ace_size: {}", header.ace_size()),
+            count=*header.ace_size() as usize - (mem::size_of::<Guid>() + mem::size_of::<Guid>() + sid.len()))]
         application_data: Vec<u8>,
 
         /// Conditional ACEs are a form of CALLBACK ACEs with a special format
