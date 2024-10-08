@@ -4,7 +4,7 @@ use getset::Getters;
 use strum::Display;
 
 #[binrw]
-#[derive(Eq, PartialEq, Getters)]
+#[derive(Eq, PartialEq, Getters, Clone, Copy)]
 #[getset(get = "pub")]
 pub struct AceHeader {
     /// An unsigned 8-bit integer that specifies the ACE types.
@@ -109,7 +109,7 @@ pub enum AceType {
 bitflags! {
     ///
     /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
-    #[derive(Eq, PartialEq)]
+    #[derive(Eq, PartialEq, Clone, Copy)]
     pub struct AceFlags: u8 {
         /// Child objects that are containers, such as directories, inherit the
         /// ACE as an effective ACE. The inherited ACE is inheritable unless the

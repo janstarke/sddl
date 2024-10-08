@@ -2,7 +2,7 @@ use binrw::{BinRead, BinReaderExt, BinWrite, BinWriterExt};
 use bitflags::bitflags;
 
 bitflags! {
-    #[derive(Eq, PartialEq)]
+    #[derive(Eq, PartialEq, Debug)]
     pub struct AccessMask: u32 {
 
         /// **When used in an Access Request operation:** When read access to an
@@ -14,7 +14,7 @@ bitflags! {
         /// resulting ACCESS_MASK bits are the actual permissions that are
         /// checked against the ACE structures in the security descriptor that
         /// attached to the object.
-        /// 
+        ///
         /// **When used to set the Security Descriptor on an object:** When the
         /// GR bit is set in an ACE that is to be attached to an object, it is
         /// translated into a combination of bits, which are usually set in the
@@ -34,7 +34,7 @@ bitflags! {
         /// ACCESS_MASK bits are the actual permissions that are checked against
         /// the ACE structures in the security descriptor that attached to the
         /// object.
-        /// 
+        ///
         /// **When used to set the Security Descriptor on an object:** When the
         /// GW bit is set in an ACE that is to be attached to an object, it is
         /// translated into a combination of bits, which are usually set in the
@@ -54,7 +54,7 @@ bitflags! {
         /// ACCESS_MASK bits are the actual permissions that are checked against
         /// the ACE structures in the security descriptor that attached to the
         /// object.
-        /// 
+        ///
         /// **When used to set the Security Descriptor on an object:** When the
         /// GX bit is set in an ACE that is to be attached to an object, it is
         /// translated into a combination of bits, which are usually set in the
@@ -125,6 +125,33 @@ bitflags! {
         /// Specifies access to delete an object.
         const DELETE = 0x00010000;
 
+        // The source may set any bits
+        const _ = !0;
+    }
+}
+
+impl AccessMask {
+    /// returns the lower 16 bits of the access mask
+    ///
+    /// ```rust
+    /// use sddl::AccessMask;
+    /// assert_eq!(AccessMask::GENERIC_READ.object_specific_flags(), 0);
+    /// assert_eq!((AccessMask::GENERIC_READ | AccessMask::GENERIC_WRITE).object_specific_flags(), 0);
+    ///
+    /// assert_eq!(AccessMask::from_bits(0x80000000).unwrap(), AccessMask::GENERIC_READ);
+    /// assert_eq!(AccessMask::from_bits(0x80001234).unwrap().object_specific_flags(), 0x1234);
+    /// assert_eq!(AccessMask::from_bits(0x00001234).unwrap().object_specific_flags(), 0x1234);
+    /// ```
+    pub fn object_specific_flags(&self) -> u16 {
+        let bytes = self.bits().to_be_bytes();
+        u16::from_be_bytes([bytes[2], bytes[3]])
+    }
+}
+
+bitflags! {
+    #[derive(Eq, PartialEq, Debug)]
+    pub struct AdsAccessMask: u16 {
+
         /// The ObjectType GUID identifies an extended access right.
         const ADS_RIGHT_DS_CONTROL_ACCESS = 0x00000100;
 
@@ -148,9 +175,27 @@ bitflags! {
 
         /// The ObjectType GUID identifies a validated write.
         const ADS_RIGHT_DS_SELF = 0x00000008;
+        const _ = !0;
     }
 }
 
+bitflags! {
+    #[derive(Eq, PartialEq, Debug)]
+    pub struct MandatoryAccessMask: u16 {
+        ///  A principal with a lower mandatory level than the object cannot
+        ///  write to the object. 
+        const SYSTEM_MANDATORY_LABEL_NO_WRITE_UP = 0x01;
+
+        ///  A principal with a lower mandatory level than the object cannot
+        ///  read the object. 
+        const SYSTEM_MANDATORY_LABEL_NO_READ_UP = 0x02;
+
+        ///  A principal with a lower mandatory level than the object cannot
+        ///  execute the object. 
+        const SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP = 0x04;
+        const _ = !0;
+    }
+}
 
 impl BinRead for AccessMask {
     type Args<'a> = ();
@@ -176,5 +221,17 @@ impl BinWrite for AccessMask {
     ) -> binrw::BinResult<()> {
         let raw_value = self.bits();
         writer.write_type_args(&raw_value, endian, args)
+    }
+}
+
+impl From<&AccessMask> for AdsAccessMask {
+    fn from(value: &AccessMask) -> Self {
+        Self::from_bits(value.object_specific_flags()).unwrap()
+    }
+}
+
+impl From<&AccessMask> for MandatoryAccessMask {
+    fn from(value: &AccessMask) -> Self {
+        Self::from_bits(value.object_specific_flags()).unwrap()
     }
 }

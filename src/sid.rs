@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::mem;
 
 use binrw::binrw;
 use getset::Getters;
@@ -101,16 +102,16 @@ pub enum WellKnownSidType {
 pub const MAX_SUB_AUTHORITIES: u8 = 15;
 
 /// <https://github.com/microsoft/referencesource/blob/master/mscorlib/system/security/principal/sid.cs>
-/// 
+///
 /// <https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-sid>
-/// 
+///
 /// <https://learn.microsoft.com/en-us/windows/win32/secauthz/sid-components>
 #[binrw]
 #[derive(Eq, PartialEq, Getters)]
-#[getset(get="pub")]
+#[getset(get = "pub")]
 pub struct Sid {
     revision: u8,
-    
+
     #[br(assert(sub_authority_count <= MAX_SUB_AUTHORITIES))]
     #[bw(assert(*sub_authority_count <= MAX_SUB_AUTHORITIES))]
     sub_authority_count: u8,
@@ -125,7 +126,22 @@ impl Display for Sid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let revision = self.revision();
         let identifier_authority = self.identifier_authority();
-        let sub_authorities = self.sub_authority().iter().map(|u| u.to_string()).collect::<Vec<_>>().join("-");
+        let sub_authorities = self
+            .sub_authority()
+            .iter()
+            .map(|u| u.to_string())
+            .collect::<Vec<_>>()
+            .join("-");
         write!(f, "S-{revision}-{identifier_authority}-{sub_authorities}")
+    }
+}
+
+impl Sid {
+    #[allow(clippy::len_without_is_empty)]
+    pub fn len(&self) -> usize {
+        mem::size_of::<u8>()
+            + mem::size_of::<u8>()
+            + mem::size_of::<SidIdentifierAuthority>()
+            + (self.sub_authority().len() * mem::size_of::<u32>())
     }
 }

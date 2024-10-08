@@ -30,7 +30,7 @@ impl Display for SidIdentifierAuthority {
 macro_rules! predefined_authority {
     ($name: ident, $value: expr) => {
         #[allow(unused)]
-        const $name: SidIdentifierAuthority = SidIdentifierAuthority {
+        pub const $name: SidIdentifierAuthority = SidIdentifierAuthority {
             value: [0, 0, 0, 0, 0, $value],
         };
     };
@@ -42,4 +42,5 @@ predefined_authority!(SECURITY_LOCAL_SID_AUTHORITY, 2);
 predefined_authority!(SECURITY_CREATOR_SID_AUTHORITY, 3);
 predefined_authority!(SECURITY_NON_UNIQUE_AUTHORITY, 4);
 predefined_authority!(SECURITY_NT_AUTHORITY, 5);
+predefined_authority!(SECURITY_MANDATORY_LABEL_AUTHORITY, 6);
 predefined_authority!(SECURITY_RESOURCE_MANAGER_AUTHORITY, 9);

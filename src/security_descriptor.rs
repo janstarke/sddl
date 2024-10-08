@@ -8,15 +8,15 @@ use crate::ControlFlags;
 #[derive(Eq, PartialEq, Getters)]
 #[getset(get = "pub")]
 pub struct SecurityDescriptor {
-    flags: ControlFlags,
-
+    #[br(assert(revision == 1))]
+    #[bw(assert(*revision == 1))]
+    revision: u8,
+    
     #[br(ignore)]
     #[getset(skip)]
     _reserved1: u8,
 
-    #[br(assert(revision == 1))]
-    #[bw(assert(*revision == 1))]
-    revision: u8,
+    flags: ControlFlags,
 
     #[brw(big)]
     owner_offset: u32,
