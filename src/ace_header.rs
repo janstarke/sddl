@@ -3,7 +3,7 @@ use bitflags::bitflags;
 use getset::Getters;
 use strum::Display;
 
-use crate::AccessMask;
+use crate::{sddl_h::*, AccessMask};
 
 #[binrw]
 #[derive(Eq, PartialEq, Getters, Clone, Copy)]
@@ -157,25 +157,25 @@ impl AceFlags {
     pub fn sddl_string(&self) -> String {
         let mut sddl = String::with_capacity(16);
         if self.contains(Self::OBJECT_INHERIT_ACE) {
-            sddl.push_str("OI");
+            sddl.push_str(SDDL_OBJECT_INHERIT);
         }
         if self.contains(Self::CONTAINER_INHERIT_ACE) {
-            sddl.push_str("CI");
+            sddl.push_str(SDDL_CONTAINER_INHERIT);
         }
         if self.contains(Self::NO_PROPAGATE_INHERIT_ACE) {
-            sddl.push_str("NP");
+            sddl.push_str(SDDL_NO_PROPAGATE);
         }
         if self.contains(Self::INHERIT_ONLY_ACE) {
-            sddl.push_str("IO");
+            sddl.push_str(SDDL_INHERIT_ONLY);
         }
         if self.contains(Self::INHERITED_ACE) {
-            sddl.push_str("ID");
+            sddl.push_str(SDDL_INHERITED);
         }
         if self.contains(Self::SUCCESSFUL_ACCESS_ACE_FLAG) {
-            sddl.push_str("SA");
+            sddl.push_str(SDDL_AUDIT_SUCCESS);
         }
         if self.contains(Self::FAILED_ACCESS_ACE_FLAG) {
-            sddl.push_str("FA");
+            sddl.push_str(SDDL_AUDIT_FAILURE);
         }
         sddl
     }

@@ -1,6 +1,8 @@
 use binrw::{BinRead, BinReaderExt, BinWrite, BinWriterExt};
 use bitflags::bitflags;
 
+use crate::sddl_h::*;
+
 bitflags! {
     #[derive(Eq, PartialEq, Debug, Copy, Clone)]
     pub struct AccessMask: u32 {
@@ -201,16 +203,16 @@ impl AccessMask {
     pub fn sddl_string(&self) -> String {
         let mut sddl = String::with_capacity(32);
         if self.contains(Self::GENERIC_READ) {
-            sddl.push_str("GR");
+            sddl.push_str(SDDL_GENERIC_READ);
         }
         if self.contains(Self::GENERIC_WRITE) {
-            sddl.push_str("GW");
+            sddl.push_str(SDDL_GENERIC_WRITE);
         }
         if self.contains(Self::GENERIC_EXECUTE) {
-            sddl.push_str("GX");
+            sddl.push_str(SDDL_GENERIC_EXECUTE);
         }
         if self.contains(Self::GENERIC_ALL) {
-            sddl.push_str("GA");
+            sddl.push_str(SDDL_GENERIC_ALL);
         }
         if self.contains(Self::MAXIMUM_ALLOWED) {
             sddl.push_str("MA");

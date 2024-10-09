@@ -3,7 +3,7 @@ use std::fmt::Display;
 use binrw::{binread, FilePtr};
 use getset::Getters;
 
-use crate::{Acl, ControlFlags, Offset, Sid};
+use crate::{sddl_h::*, Acl, ControlFlags, Offset, Sid};
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/2918391b-75b9-4eeb-83f0-7fdc04a5c6c9>
 #[binread]
@@ -60,47 +60,47 @@ impl SecurityDescriptor {
         self.dacl_ref.as_ref().map(|d| &d.value)
     }
 
-    pub fn sacl_as_string(&self) -> Option<String> {
+    pub fn sacl_as_sddl_string(&self) -> Option<String> {
         self.sacl().map(|sacl| {
             let mut flags = String::with_capacity(5);
             if self.flags().contains(ControlFlags::SystemAclProtected) {
-                flags.push('P');
+                flags.push_str(SDDL_PROTECTED);
             }
             if self
                 .flags()
                 .contains(ControlFlags::SystemAclAutoInheritRequired)
             {
-                flags.push_str("AR");
+                flags.push_str(SDDL_AUTO_INHERIT_REQ);
             }
             if self.flags().contains(ControlFlags::SystemAclAutoInherited) {
-                flags.push_str("AI");
+                flags.push_str(SDDL_AUTO_INHERITED);
             }
-            format!("S:{flags}{sacl}")
+            format!("{SDDL_SACL}{SDDL_DELIMINATOR}{flags}{sacl}")
         })
     }
 
-    pub fn dacl_as_string(&self) -> Option<String> {
+    pub fn dacl_as_sddl_string(&self) -> Option<String> {
         self.dacl().map(|dacl| {
             let mut flags = String::with_capacity(5);
             if self
                 .flags()
                 .contains(ControlFlags::DiscretionaryAclProtected)
             {
-                flags.push('P');
+                flags.push_str(SDDL_PROTECTED);
             }
             if self
                 .flags()
                 .contains(ControlFlags::DiscretionaryAclAutoInheritRequired)
             {
-                flags.push_str("AR");
+                flags.push_str(SDDL_AUTO_INHERIT_REQ);
             }
             if self
                 .flags()
                 .contains(ControlFlags::DiscretionaryAclAutoInherited)
             {
-                flags.push_str("AI");
+                flags.push_str(SDDL_AUTO_INHERITED);
             }
-            format!("S:{flags}{dacl}")
+            format!("{SDDL_DACL}{SDDL_DELIMINATOR}{flags}{dacl}")
         })
     }
 }
@@ -108,15 +108,15 @@ impl SecurityDescriptor {
 impl Display for SecurityDescriptor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(owner) = self.owner() {
-            write!(f, "O:{owner}")?;
+            write!(f, "{SDDL_OWNER}{SDDL_DELIMINATOR}{owner}")?;
         }
         if let Some(group) = self.group() {
-            write!(f, "O:{group}")?;
+            write!(f, "{SDDL_GROUP}{SDDL_DELIMINATOR}{group}")?;
         }
-        if let Some(sacl) = self.sacl_as_string() {
+        if let Some(sacl) = self.sacl_as_sddl_string() {
             write!(f, "{sacl}")?;
         }
-        if let Some(dacl) = self.dacl_as_string() {
+        if let Some(dacl) = self.dacl_as_sddl_string() {
             write!(f, "{dacl}")?;
         }
         Ok(())

@@ -4,6 +4,7 @@ use binrw::binrw;
 use getset::Getters;
 
 use crate::Ace;
+use crate::sddl_h::*;
 
 /// The ACL structure is the header of an access control list (ACL). A complete
 /// ACL consists of an ACL structure followed by an ordered list of zero or more
@@ -51,7 +52,7 @@ impl Display for Acl {
     /// <https://learn.microsoft.com/de-de/windows/win32/secauthz/security-descriptor-string-format>
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for ace in self.ace_list() {
-            write!(f, "({ace})")?;
+            write!(f, "{SDDL_ACE_BEGIN}{ace}{SDDL_ACE_END}")?;
         }
         Ok(())
     }

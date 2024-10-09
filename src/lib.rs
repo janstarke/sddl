@@ -34,8 +34,8 @@
 //! assert!(security_descriptor.flags().contains(ControlFlags::SystemAclProtected));
 //! assert!(security_descriptor.flags().contains(ControlFlags::SelfRelative));
 //! 
-//! assert_eq!(security_descriptor.sacl_as_string().unwrap(), "S:P(AU;FA;GR;;;WD)".to_string());
-//! assert_eq!(security_descriptor.dacl_as_string().unwrap(), "(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)".to_string());
+//! assert_eq!(security_descriptor.sacl_as_sddl_string().unwrap(), "S:P(AU;FA;GR;;;WD)".to_string());
+//! assert_eq!(security_descriptor.dacl_as_sddl_string().unwrap(), "(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)".to_string());
 //! ``` 
 mod control_flags;
 mod security_descriptor;

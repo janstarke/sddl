@@ -1,13 +1,11 @@
 use std::{fmt::Display, mem};
-use strum::EnumProperty;
-
 use binrw::binrw;
 
-use crate::{AceHeader, AdsAccessMask, Guid, MandatoryAccessMask, Sid};
+use crate::{sddl_h::*, AceHeader, AdsAccessMask, Guid, MandatoryAccessMask, Sid};
 
 /// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586
 #[binrw]
-#[derive(Eq, PartialEq, EnumProperty)]
+#[derive(Eq, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum Ace {
     /// The ACCESS_ALLOWED_ACE structure defines an ACE for the discretionary
@@ -15,7 +13,6 @@ pub enum Ace {
     /// access-allowed ACE allows access to an object for a specific trustee
     /// identified by a security identifier (SID).
     #[brw(magic = 0x00u8)]
-    #[strum(props(type_string = "A"))]
     ACCESS_ALLOWED_ACE {
         header: AceHeader,
 
@@ -31,7 +28,6 @@ pub enum Ace {
     /// grant access. The ACE also contains a GUID and a set of flags that
     /// control inheritance of the ACE by child objects.
     #[brw(magic = 0x05u8)]
-    #[strum(props(type_string = "OA"))]
     ACCESS_ALLOWED_OBJECT_ACE {
         header: AceHeader,
         #[br(calc(header.mask().into()))]
@@ -72,7 +68,6 @@ pub enum Ace {
     /// controls access to an object. An access-denied ACE denies access to an
     /// object for a specific trustee identified by a SID.
     #[brw(magic = 0x01u8)]
-    #[strum(props(type_string = "D"))]
     ACCESS_DENIED_ACE {
         header: AceHeader,
         /// The SID of a trustee.
@@ -87,7 +82,6 @@ pub enum Ace {
     /// deny access. The ACE also contains a GUID and a set of flags that
     /// control inheritance of the ACE by child objects.
     #[brw(magic = 0x06u8)]
-    #[strum(props(type_string = "OD"))]
     ACCESS_DENIED_OBJECT_ACE {
         header: AceHeader,
         object_type: Guid,
@@ -106,7 +100,6 @@ pub enum Ace {
     /// that controls access to an object. An access-allowed ACE allows access
     /// to an object for a specific trustee identified by a SID.
     #[brw(magic = 0x09u8)]
-    #[strum(props(type_string = "XA"))]
     ACCESS_ALLOWED_CALLBACK_ACE {
         header: AceHeader,
         ///  The SID of a trustee.
@@ -131,7 +124,6 @@ pub enum Ace {
     /// that controls access to an object. An access-denied ACE denies access to
     /// an object for a specific trustee identified by a SID.
     #[brw(magic = 0x0au8)]
-    #[strum(props(type_string = "XD"))]
     ACCESS_DENIED_CALLBACK_ACE {
         header: AceHeader,
         ///  The SID of a trustee.
@@ -159,7 +151,6 @@ pub enum Ace {
     /// grant access. The ACE also contains a GUID and a set of flags that
     /// control inheritance of the ACE by child objects.
     #[brw(magic = 0x0bu8)]
-    #[strum(props(type_string = "ZA"))]
     ACCESS_ALLOWED_CALLBACK_OBJECT_ACE {
         header: AceHeader,
 
@@ -210,7 +201,6 @@ pub enum Ace {
     /// deny access. The ACE also contains a GUID and a set of flags that
     /// control inheritance of the ACE by child objects.
     #[brw(magic = 0x0cu8)]
-    #[strum(props(type_string = "ZD"))]
     ACCESS_DENIED_CALLBACK_OBJECT_ACE {
         header: AceHeader,
 
@@ -257,7 +247,6 @@ pub enum Ace {
     /// to be logged when a specified trustee attempts to gain access to an
     /// object. The trustee is identified by a SID.
     #[brw(magic = 0x02u8)]
-    #[strum(props(type_string = "AU"))]
     SYSTEM_AUDIT_ACE {
         header: AceHeader,
         ///  The SID of a trustee. The length of the SID MUST be a multiple of
@@ -278,7 +267,6 @@ pub enum Ace {
     /// a GUID and a set of flags that control inheritance of the ACE by child
     /// objects.
     #[brw(magic = 0x07u8)]
-    #[strum(props(type_string = "OU"))]
     SYSTEM_AUDIT_OBJECT_ACE {
         header: AceHeader,
 
@@ -317,7 +305,6 @@ pub enum Ace {
     /// trustee attempts to gain access to an object. The trustee is identified
     /// by a SID.
     #[brw(magic = 0x0du8)]
-    #[strum(props(type_string = "XU"))]
     SYSTEM_AUDIT_CALLBACK_ACE {
         header: AceHeader,
         ///  The SID of a trustee. The length of the SID MUST be a multiple of
@@ -347,7 +334,6 @@ pub enum Ace {
     /// that specifies the mandatory access level and policy for a securable
     /// object
     #[brw(magic = 0x11u8)]
-    #[strum(props(type_string = "ML"))]
     SYSTEM_MANDATORY_LABEL_ACE {
         header: AceHeader,
 
@@ -373,7 +359,6 @@ pub enum Ace {
     /// also contains a GUID and a set of flags that control inheritance of the
     /// ACE by child objects.
     #[brw(magic = 0x0fu8)]
-    #[strum(props(type_string = "ZU"))]
     SYSTEM_AUDIT_CALLBACK_OBJECT_ACE {
         header: AceHeader,
 
@@ -411,7 +396,6 @@ pub enum Ace {
     /// SYSTEM_RESOURCE_ATTRIBUTE_ACE is used in conditional ACEs in specifying
     /// access or audit policy for the resource.
     #[brw(magic = 0x12u8)]
-    #[strum(props(type_string = "RA"))]
     SYSTEM_RESOURCE_ATTRIBUTE_ACE {
         header: AceHeader,
         object_type: Guid,
@@ -432,7 +416,6 @@ pub enum Ace {
     /// The SYSTEM_SCOPED_POLICY_ID_ACE structure defines an ACE for the purpose
     /// of applying a central access policy to the resource.
     #[brw(magic = 0x13u8)]
-    #[strum(props(type_string = "SP"))]
     SYSTEM_SCOPED_POLICY_ID_ACE {
         header: AceHeader,
         ///  A SID that identifies a central access policy. For a
@@ -448,17 +431,37 @@ pub enum Ace {
 
 impl Display for Ace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let type_string = self.get_str("type_string").unwrap();
+        let type_string = self.type_string();
         let flag_string = self.header().ace_flags().sddl_string();
         let ace_rights = self.header().mask().sddl_string();
         let object_guid = "";
         let inherit_object_guid = "";
         let sid_string = self.sid().to_string();
-        write!(f, "{type_string};{flag_string};{ace_rights};{object_guid};{inherit_object_guid};{sid_string}")
+        let sep = SDDL_SEPERATOR;
+        write!(f, "{type_string}{sep}{flag_string}{sep}{ace_rights}{sep}{object_guid}{sep}{inherit_object_guid}{sep}{sid_string}")
     }
 }
 
 impl Ace {
+    fn type_string(&self) -> &'static str {
+        match self {
+            Ace::ACCESS_ALLOWED_ACE { .. } => SDDL_ACCESS_ALLOWED,
+            Ace::ACCESS_ALLOWED_OBJECT_ACE { .. } => SDDL_OBJECT_ACCESS_ALLOWED,
+            Ace::ACCESS_DENIED_ACE { .. } => SDDL_ACCESS_DENIED,
+            Ace::ACCESS_DENIED_OBJECT_ACE { .. } => SDDL_OBJECT_ACCESS_DENIED,
+            Ace::ACCESS_ALLOWED_CALLBACK_ACE { .. } => SDDL_CALLBACK_ACCESS_ALLOWED,
+            Ace::ACCESS_DENIED_CALLBACK_ACE { .. } => SDDL_CALLBACK_ACCESS_DENIED,
+            Ace::ACCESS_ALLOWED_CALLBACK_OBJECT_ACE { .. } => SDDL_CALLBACK_OBJECT_ACCESS_ALLOWED,
+            Ace::ACCESS_DENIED_CALLBACK_OBJECT_ACE { .. } => "ZD",
+            Ace::SYSTEM_AUDIT_ACE { .. } => SDDL_AUDIT,
+            Ace::SYSTEM_AUDIT_OBJECT_ACE { .. } => SDDL_OBJECT_AUDIT,
+            Ace::SYSTEM_AUDIT_CALLBACK_ACE { .. } => SDDL_CALLBACK_AUDIT,
+            Ace::SYSTEM_MANDATORY_LABEL_ACE { .. } => SDDL_MANDATORY_LABEL,
+            Ace::SYSTEM_AUDIT_CALLBACK_OBJECT_ACE { .. } =>  "ZU",
+            Ace::SYSTEM_RESOURCE_ATTRIBUTE_ACE { .. } => SDDL_RESOURCE_ATTRIBUTE,
+            Ace::SYSTEM_SCOPED_POLICY_ID_ACE { .. } => SDDL_SCOPED_POLICY_ID,
+        }
+    }
     fn header(&self) -> &AceHeader {
         match self {
             Ace::ACCESS_ALLOWED_ACE { header, .. }
