@@ -43,7 +43,7 @@ pub struct Acl {
     #[getset(skip)]
     _sbz2: u16,
 
-    #[br(args { inner: (acl_revision,) }, count=ace_count)]
+    #[br(count=ace_count)]
     ace_list: Vec<Ace>,
 }
 

@@ -46,6 +46,7 @@ mod ace;
 mod ace_header;
 mod access_mask;
 mod guid;
+mod offset;
 
 pub use control_flags::*;
 pub use security_descriptor::*;
@@ -56,3 +57,4 @@ pub use ace::*;
 pub use ace_header::*;
 pub use access_mask::*;
 pub use guid::*;
+pub(crate) use offset::*;

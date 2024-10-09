@@ -2,7 +2,7 @@ use binrw::{BinRead, BinReaderExt, BinWrite, BinWriterExt};
 use bitflags::bitflags;
 
 bitflags! {
-    #[derive(Eq, PartialEq, Debug)]
+    #[derive(Eq, PartialEq, Debug, Copy, Clone)]
     pub struct AccessMask: u32 {
 
         /// **When used in an Access Request operation:** When read access to an
@@ -60,7 +60,7 @@ bitflags! {
         /// translated into a combination of bits, which are usually set in the
         /// lower 16 bits of the ACCESS_MASK. (Individual protocol
         /// specifications MAY specify a different configuration.) The bits that
-        /// are set are implementation dependent. During this translation, the
+        /// are set are implementation AdsAccessMaskdependent. During this translation, the
         /// GX bit is cleared. The resulting ACCESS_MASK bits are the actual
         /// permissions that are granted by this ACE.
         const GENERIC_EXECUTE = 0x20000000;
@@ -194,6 +194,46 @@ bitflags! {
         ///  execute the object. 
         const SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP = 0x04;
         const _ = !0;
+    }
+}
+
+impl AccessMask {
+    pub fn sddl_string(&self) -> String {
+        let mut sddl = String::with_capacity(32);
+        if self.contains(Self::GENERIC_READ) {
+            sddl.push_str("GR");
+        }
+        if self.contains(Self::GENERIC_WRITE) {
+            sddl.push_str("GW");
+        }
+        if self.contains(Self::GENERIC_EXECUTE) {
+            sddl.push_str("GX");
+        }
+        if self.contains(Self::GENERIC_ALL) {
+            sddl.push_str("GA");
+        }
+        if self.contains(Self::MAXIMUM_ALLOWED) {
+            sddl.push_str("MA");
+        }
+        if self.contains(Self::ACCESS_SYSTEM_SECURITY) {
+            sddl.push_str("AS");
+        }
+        if self.contains(Self::SYNCHRONIZE) {
+            sddl.push_str("SY");
+        }
+        if self.contains(Self::WRITE_OWNER) {
+            sddl.push_str("WO");
+        }
+        if self.contains(Self::WRITE_DACL) {
+            sddl.push_str("WD");
+        }
+        if self.contains(Self::READ_CONTROL) {
+            sddl.push_str("RC");
+        }
+        if self.contains(Self::DELETE) {
+            sddl.push_str("SD");
+        }
+        sddl
     }
 }
 

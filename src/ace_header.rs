@@ -3,32 +3,13 @@ use bitflags::bitflags;
 use getset::Getters;
 use strum::Display;
 
-use crate::AclRevision;
+use crate::{AccessMask, AclRevision};
 
 #[binrw]
 #[brw(import(acl_revision: AclRevision))]
 #[derive(Eq, PartialEq, Getters, Clone, Copy)]
 #[getset(get = "pub")]
 pub struct AceHeader {
-    /// An unsigned 8-bit integer that specifies the ACE types.
-    #[br(assert(match acl_revision {
-        AclRevision::ACL_REVISION => 
-            ace_type == AceType::ACCESS_ALLOWED_ACE_TYPE ||
-            ace_type == AceType::ACCESS_DENIED_ACE_TYPE ||
-            ace_type == AceType::SYSTEM_AUDIT_ACE_TYPE ||
-            ace_type == AceType::SYSTEM_ALARM_ACE_TYPE || 
-            ace_type == AceType::SYSTEM_MANDATORY_LABEL_ACE_TYPE || 
-            ace_type == AceType::SYSTEM_RESOURCE_ATTRIBUTE_ACE_TYPE || 
-            ace_type == AceType::SYSTEM_SCOPED_POLICY_ID_ACE_TYPE,
-        AclRevision::ACL_REVISION_DS => 
-            ace_type == AceType::ACCESS_ALLOWED_OBJECT_ACE_TYPE ||
-            ace_type == AceType::ACCESS_DENIED_OBJECT_ACE_TYPE ||
-            ace_type == AceType::SYSTEM_AUDIT_OBJECT_ACE_TYPE ||
-            ace_type == AceType::SYSTEM_ALARM_OBJECT_ACE_TYPE || 
-            ace_type == AceType::SYSTEM_MANDATORY_LABEL_ACE_TYPE
-    }))]
-    ace_type: AceType,
-
     /// An unsigned 8-bit integer that specifies a set of ACE type-specific
     /// control flags.
     ace_flags: AceFlags,
@@ -41,6 +22,8 @@ pub struct AceHeader {
     /// Otherwise, this additional data is not interpreted and MUST be ignored.
     #[brw(assert(ace_size%4 == 0))]
     ace_size: u16,
+
+    mask: AccessMask,
 }
 
 /// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586
@@ -48,7 +31,7 @@ pub struct AceHeader {
 #[binrw]
 #[brw(repr=u8)]
 #[allow(non_camel_case_types)]
-#[derive(Eq, PartialEq, Display, Clone, Copy)]
+#[derive(Eq, PartialEq, Display, Clone, Copy, Debug)]
 pub enum AceType {
     /// Access-allowed ACE that uses the ACCESS_ALLOWED_ACE (section 2.4.4.2)
     /// structure.
@@ -128,7 +111,7 @@ pub enum AceType {
 bitflags! {
     ///
     /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
-    #[derive(Eq, PartialEq, Clone, Copy)]
+    #[derive(Eq, PartialEq, Clone, Copy, Debug)]
     pub struct AceFlags: u8 {
         /// Child objects that are containers, such as directories, inherit the
         /// ACE as an effective ACE. The inherited ACE is inheritable unless the
@@ -168,6 +151,34 @@ bitflags! {
         /// Used with system-audit ACEs in a SACL to generate audit messages for
         /// successful access attempts.
         const SUCCESSFUL_ACCESS_ACE_FLAG = 0x40;
+    }
+}
+
+impl AceFlags {
+    pub fn sddl_string(&self) -> String {
+        let mut sddl = String::with_capacity(16);
+        if self.contains(Self::OBJECT_INHERIT_ACE) {
+            sddl.push_str("OI");
+        }
+        if self.contains(Self::CONTAINER_INHERIT_ACE) {
+            sddl.push_str("CI");
+        }
+        if self.contains(Self::NO_PROPAGATE_INHERIT_ACE) {
+            sddl.push_str("NP");
+        }
+        if self.contains(Self::INHERIT_ONLY_ACE) {
+            sddl.push_str("IO");
+        }
+        if self.contains(Self::INHERITED_ACE) {
+            sddl.push_str("ID");
+        }
+        if self.contains(Self::SUCCESSFUL_ACCESS_ACE_FLAG) {
+            sddl.push_str("SA");
+        }
+        if self.contains(Self::FAILED_ACCESS_ACE_FLAG) {
+            sddl.push_str("FA");
+        }
+        sddl
     }
 }
 

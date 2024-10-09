@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
-use binrw::{binread, BinRead, FilePtr};
+use binrw::{binread, FilePtr};
 use getset::Getters;
 
-use crate::{Acl, ControlFlags, Sid};
+use crate::{Acl, ControlFlags, Offset, Sid};
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/2918391b-75b9-4eeb-83f0-7fdc04a5c6c9>
 #[binread]
@@ -41,21 +41,6 @@ pub struct SecurityDescriptor {
         offset=sd_offset.0,
         map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::DiscretionaryAclPresent) {Some(d)} else { None }))]
     dacl_ref: Option<FilePtr<u32, Acl>>,
-}
-
-#[derive(Eq, PartialEq, Copy, Clone)]
-struct Offset(u64);
-impl BinRead for Offset {
-    type Args<'a> = ();
-
-    fn read_options<R: std::io::Read + std::io::Seek>(
-        reader: &mut R,
-        _endian: binrw::Endian,
-        _args: Self::Args<'_>,
-    ) -> binrw::BinResult<Self> {
-        let offset = reader.stream_position()?;
-        Ok(Self(offset))
-    }
 }
 
 impl SecurityDescriptor {

@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 use std::mem;
 
 use binrw::binrw;
@@ -143,5 +143,11 @@ impl Sid {
             + mem::size_of::<u8>()
             + mem::size_of::<SidIdentifierAuthority>()
             + (self.sub_authority().len() * mem::size_of::<u32>())
+    }
+}
+
+impl Debug for Sid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self}")
     }
 }
