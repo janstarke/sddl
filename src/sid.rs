@@ -3,6 +3,7 @@ use std::mem;
 
 use binrw::binrw;
 use getset::Getters;
+use strum::EnumProperty;
 
 use crate::SidIdentifierAuthority;
 
@@ -35,6 +36,7 @@ enum SidNameUse {
 
 /// <https://github.com/microsoft/referencesource/blob/master/mscorlib/system/security/principal/sid.cs#L61>
 #[allow(unused)]
+#[derive(EnumProperty)]
 pub enum WellKnownSidType {
     NullSid = 0,
     WorldSid = 1,

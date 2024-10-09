@@ -47,6 +47,7 @@ mod ace_header;
 mod access_mask;
 mod guid;
 mod offset;
+mod sddl_h;
 
 pub use control_flags::*;
 pub use security_descriptor::*;

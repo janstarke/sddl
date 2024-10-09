@@ -3,10 +3,9 @@ use bitflags::bitflags;
 use getset::Getters;
 use strum::Display;
 
-use crate::{AccessMask, AclRevision};
+use crate::AccessMask;
 
 #[binrw]
-#[brw(import(acl_revision: AclRevision))]
 #[derive(Eq, PartialEq, Getters, Clone, Copy)]
 #[getset(get = "pub")]
 pub struct AceHeader {
