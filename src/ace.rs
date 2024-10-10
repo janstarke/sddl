@@ -3,7 +3,7 @@ use binrw::binrw;
 
 use crate::{sddl_h::*, AceHeader, AdsAccessMask, Guid, MandatoryAccessMask, Sid};
 
-/// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586
+/// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
 #[binrw]
 #[derive(Eq, PartialEq)]
 #[allow(non_camel_case_types)]

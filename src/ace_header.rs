@@ -25,7 +25,7 @@ pub struct AceHeader {
     mask: AccessMask,
 }
 
-/// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586
+/// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
 #[repr(u8)]
 #[binrw]
 #[brw(repr=u8)]
