@@ -7,13 +7,14 @@ use std::io::Write;
 use std::path::Path;
 
 fn main() {
-    let out_dir = env::var_os("CARGO_MANIFEST_DIR").unwrap();
+    let out_dir = env::var_os("OUT_DIR").unwrap();
     let reader = io::BufReader::new(fs::File::open("misc/sddl.h").unwrap());
     let mut out_file = io::BufWriter::new(
-        fs::File::create(Path::new(&out_dir).join("src").join("sddl_h.rs")).unwrap(),
+        fs::File::create(Path::new(&out_dir).join("sddl_h.rs")).unwrap(),
     );
 
-    writeln!(out_file, "#![allow(unused)]").unwrap();
+    writeln!(out_file, "#[allow(unused)]").unwrap();
+    writeln!(out_file, "pub (crate) mod sddl_constants {{").unwrap();
 
     for line in reader.lines() {
         let line = line.unwrap();
@@ -35,6 +36,7 @@ fn main() {
             writeln!(out_file, "pub const {id}: &str = \"{value}\";").unwrap();
         }
     }
+    writeln!(out_file, "}}").unwrap();
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=misc/sddl.h");
