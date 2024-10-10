@@ -22,24 +22,28 @@ pub struct SecurityDescriptor {
 
     flags: ControlFlags,
 
-    #[brw(little,
+    #[br(little,
         offset=sd_offset.0,
-        if(! flags.contains(ControlFlags::OwnerDefaulted)))]
+        if(! flags.contains(ControlFlags::OwnerDefaulted)))
+        ]
     owner_ref: Option<FilePtr<u32, Sid>>,
 
-    #[brw(little,
+    #[br(little,
         offset=sd_offset.0,
-        if(! flags.contains(ControlFlags::GroupDefaulted)))]
+        if(! flags.contains(ControlFlags::GroupDefaulted)))
+        ]
     group_ref: Option<FilePtr<u32, Sid>>,
 
-    #[brw(little,
+    #[br(little,
         offset=sd_offset.0,
-        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::SystemAclPresent) {Some(d)} else { None }))]
+        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::SystemAclPresent) {Some(d)} else { None }))
+        ]
     sacl_ref: Option<FilePtr<u32, Acl>>,
 
-    #[brw(little,
+    #[br(little,
         offset=sd_offset.0,
-        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::DiscretionaryAclPresent) {Some(d)} else { None }))]
+        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::DiscretionaryAclPresent) {Some(d)} else { None }))
+        ]
     dacl_ref: Option<FilePtr<u32, Acl>>,
 }
 
