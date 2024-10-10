@@ -177,8 +177,7 @@ pub enum Ace {
 
         /// Optional application data. The size of the application data is
         /// determined by the AceSize field of the ACE_HEADER.
-        #[br(err_context("ace_size: {}", header.ace_size()),
-            count=*header.ace_size() as usize - (mem::size_of::<Guid>() + mem::size_of::<Guid>() + sid.len()))]
+        #[br(count=*header.ace_size() as usize - (mem::size_of::<Guid>() + mem::size_of::<Guid>() + sid.len()))]
         application_data: Vec<u8>,
 
         /// Conditional ACEs are a form of CALLBACK ACEs with a special format
