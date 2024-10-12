@@ -342,7 +342,7 @@ pub enum Ace {
         ///  the mandatory integrity level of the object associated with the
         ///  SACL that contains this ACE. The RID must be one of the following
         ///  values.
-        #[brw(assert(sid.len() % 4 == 0 && sid.identifier_authority() == &crate::SECURITY_MANDATORY_LABEL_AUTHORITY))]
+        #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
 
         #[br(calc(header.mask().into()))]
@@ -435,7 +435,7 @@ impl Display for Ace {
         let ace_rights = self.header().mask().sddl_string();
         let object_guid = "";
         let inherit_object_guid = "";
-        let sid_string = self.sid().to_string();
+        let sid_string = self.sid().alias().map(String::from).unwrap_or(self.sid().to_string());
         let sep = SDDL_SEPERATOR;
         write!(f, "{type_string}{sep}{flag_string}{sep}{ace_rights}{sep}{object_guid}{sep}{inherit_object_guid}{sep}{sid_string}")
     }

@@ -19,7 +19,7 @@ fn main() {
     for line in reader.lines() {
         let line = line.unwrap();
         if let Some((_, id, value, comment)) = regex_captures!(
-            r#"#define\s+(SDDL_[A-Z0-9_]+)\s+TEXT\('([^']+)'\)(?:\s+//\s*(.+)?)?"#,
+            r#"#define\s+(SDDL_[a-zA-Z0-9_]+)\s+TEXT\('([^']+)'\)(?:\s+//\s*(.+)?)?"#,
             &line
         ) {
             if !comment.is_empty() {
@@ -27,7 +27,7 @@ fn main() {
             }
             writeln!(out_file, "pub const {id}: char = \'{value}\';").unwrap();
         } else if let Some((_, id, value, comment)) = regex_captures!(
-            r#"#define\s+(SDDL_[A-Z0-9_]+)\s+TEXT\("([^"]+)"\)(?:\s+//\s*(.+)?)?"#,
+            r#"#define\s+(SDDL_[a-zA-Z0-9_]+)\s+TEXT\("([^"]+)"\)(?:\s+//\s*(.+)?)?"#,
             &line
         ) {
             if !comment.is_empty() {

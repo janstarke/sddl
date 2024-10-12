@@ -7,11 +7,11 @@ use getset::Getters;
 #[binrw]
 #[derive(Eq, PartialEq, Getters)]
 #[getset(get = "pub")]
-pub struct SidIdentifierAuthority {
+pub struct IdentifierAuthority {
     value: [u8; 6],
 }
 
-impl Display for SidIdentifierAuthority {
+impl Display for IdentifierAuthority {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let bytes = [
             0u8,
@@ -30,7 +30,7 @@ impl Display for SidIdentifierAuthority {
 macro_rules! predefined_authority {
     ($name: ident, $value: expr) => {
         #[allow(unused)]
-        pub const $name: SidIdentifierAuthority = SidIdentifierAuthority {
+        pub const $name: IdentifierAuthority = IdentifierAuthority {
             value: [0, 0, 0, 0, 0, $value],
         };
     };
@@ -42,5 +42,17 @@ predefined_authority!(SECURITY_LOCAL_SID_AUTHORITY, 2);
 predefined_authority!(SECURITY_CREATOR_SID_AUTHORITY, 3);
 predefined_authority!(SECURITY_NON_UNIQUE_AUTHORITY, 4);
 predefined_authority!(SECURITY_NT_AUTHORITY, 5);
-predefined_authority!(SECURITY_MANDATORY_LABEL_AUTHORITY, 6);
+predefined_authority!(SECURITY_SITE_SERVER_AUTHORITY, 6);
+predefined_authority!(SECURITY_INTERNET_SITE_AUTHORITY, 7);
+predefined_authority!(SECURITY_EXCHANGE_AUTHORITY, 8);
 predefined_authority!(SECURITY_RESOURCE_MANAGER_AUTHORITY, 9);
+
+impl IdentifierAuthority {
+    pub fn is_well_known(&self) -> bool {
+        self.value[0..5] == [0, 0, 0, 0, 0] && (0..=9).contains(&self.value[5])
+    }
+
+    pub const fn from(value: u8) -> Self {
+        Self { value: [0,0,0,0,0,value] }
+    }
+}

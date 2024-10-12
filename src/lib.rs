@@ -40,7 +40,6 @@
 mod control_flags;
 mod security_descriptor;
 mod sid;
-mod sid_identifier_authority;
 mod acl;
 mod ace;
 mod ace_header;
@@ -52,7 +51,6 @@ mod sddl_h;
 pub use control_flags::*;
 pub use security_descriptor::*;
 pub use sid::*;
-pub use sid_identifier_authority::*;
 pub use acl::*;
 pub use ace::*;
 pub use ace_header::*;
