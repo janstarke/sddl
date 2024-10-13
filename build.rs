@@ -7,6 +7,8 @@ use std::io::Write;
 use std::path::Path;
 
 fn main() {
+    lalrpop::process_root().unwrap();
+    
     let out_dir = env::var_os("OUT_DIR").unwrap();
     let reader = io::BufReader::new(fs::File::open("misc/sddl.h").unwrap());
     let mut out_file = io::BufWriter::new(
@@ -40,4 +42,6 @@ fn main() {
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=misc/sddl.h");
+    println!("cargo:rerun-if-changed=src/parser.lalrpop");
+
 }

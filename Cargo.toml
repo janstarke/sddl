@@ -15,7 +15,10 @@ binrw = "0.14.0"
 bitflags = "2.6.0"
 getset = "0"
 strum = {version="0", features=["derive"]}
+thiserror = "1.0.64"
 uuid = {version="1.6", features=["serde", "v4"]}
+lalrpop-util = { version = "0.22.0", features = ["lexer", "unicode"] }
 
 [build-dependencies]
 lazy-regex = "3"
+lalrpop = "0.22.0"

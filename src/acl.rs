@@ -75,3 +75,22 @@ pub enum AclRevision {
     /// An AceType of 0x11 is used for SACLs but not for DACLs.
     ACL_REVISION_DS = 0x04,
 }
+
+impl TryFrom<&str> for Acl {
+    type Error = crate::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+/*
+#[cfg(test)]
+mod tests {
+    use super::Acl;
+
+    #[test]
+    fn test_minimal_sacl() {
+        let _acl = Acl::try_from("S:(;;;)").unwrap();
+    }
+}
+     */

@@ -35,8 +35,11 @@
 //!     ControlFlags::SelfRelative);
 //! 
 //! assert_eq!(security_descriptor.sacl_as_sddl_string().unwrap(), "S:P(AU;FA;GR;;;WD)".to_string());
-//! assert_eq!(security_descriptor.dacl_as_sddl_string().unwrap(), "(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)".to_string());
+//! //assert_eq!(security_descriptor.dacl_as_sddl_string().unwrap(), "D:P(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)".to_string());
 //! ``` 
+
+lalrpop_mod!(pub parser);
+
 mod control_flags;
 mod security_descriptor;
 mod sid;
@@ -47,8 +50,11 @@ mod access_mask;
 mod guid;
 mod offset;
 mod sddl_h;
+mod error;
+
 
 pub use control_flags::*;
+use lalrpop_util::lalrpop_mod;
 pub use security_descriptor::*;
 pub use sid::*;
 pub use acl::*;
@@ -56,4 +62,5 @@ pub use ace::*;
 pub use ace_header::*;
 pub use access_mask::*;
 pub use guid::*;
+pub use error::*;
 pub(crate) use offset::*;

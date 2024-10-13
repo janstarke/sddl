@@ -1,5 +1,6 @@
 use binrw::{BinRead, BinReaderExt, BinWrite, BinWriterExt};
 use bitflags::bitflags;
+use lalrpop_util::lexer::Token;
 
 use crate::sddl_h::*;
 
@@ -249,6 +250,20 @@ impl BinRead for AccessMask {
     ) -> binrw::BinResult<Self> {
         let raw_value: u32 = reader.read_type_args(endian, args)?;
         Ok(AccessMask::from_bits(raw_value).unwrap())
+    }
+}
+
+impl From<u32> for AccessMask {
+    fn from(value: u32) -> Self {
+        AccessMask::from_bits(value).unwrap()
+    }
+}
+
+impl<'input> TryFrom<&'input str> for AccessMask {
+    type Error = crate::Error;
+
+    fn try_from(value: &'input str) -> Result<Self, Self::Error> {
+        Ok(crate::parser::AccessMaskParser::new().parse(value)?)
     }
 }
 

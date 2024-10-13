@@ -1,0 +1,33 @@
+use std::str::FromStr;
+
+grammar;
+
+pub Term: u32 = {
+    <n:Number> => n,
+    "(" <t:Term> ")" => t,
+};
+
+
+pub AccessMask: crate::AccessMask = {
+    <n:Number> => crate::AccessMask::from(n)
+};
+
+
+Number: u32 = {
+    <s:r"(0|0x)?[0-9a-fA-F]+"> => {
+        if s.len() == 1 {
+            u32::from_str(s).unwrap()
+        } else {
+            if s.chars().next().unwrap() == '0' {
+                let s = &s[1..];
+                if s.chars().next().unwrap() == 'x' {
+                    u32::from_str_radix(&s[1..], 16).unwrap()
+                } else {
+                    u32::from_str_radix(s, 8).unwrap()
+                }
+            } else {
+                u32::from_str(s).unwrap()
+            }
+        }
+    }
+}
