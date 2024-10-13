@@ -62,9 +62,9 @@ bitflags! {
         /// translated into a combination of bits, which are usually set in the
         /// lower 16 bits of the ACCESS_MASK. (Individual protocol
         /// specifications MAY specify a different configuration.) The bits that
-        /// are set are implementation AdsAccessMaskdependent. During this translation, the
-        /// GX bit is cleared. The resulting ACCESS_MASK bits are the actual
-        /// permissions that are granted by this ACE.
+        /// are set are implementation AdsAccessMaskdependent. During this
+        /// translation, the GX bit is cleared. The resulting ACCESS_MASK bits
+        /// are the actual permissions that are granted by this ACE.
         const GENERIC_EXECUTE = 0x20000000;
 
         /// **When used in an Access Request operation:** When all access
