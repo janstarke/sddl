@@ -27,12 +27,12 @@
 //!     0x00, 0x00, 0x00, 0x00, 0x05, 0x20, 0x00, 0x00, 0x00, 0x20, 0x02, 0x00,
 //!     0x00]);
 //! let security_descriptor: SecurityDescriptor = binary_data.read_le().unwrap();
-//! println!("{:?}", security_descriptor.flags());
-//! assert!(security_descriptor.flags().contains(ControlFlags::DiscretionaryAclPresent));
-//! assert!(security_descriptor.flags().contains(ControlFlags::SystemAclPresent));
-//! assert!(security_descriptor.flags().contains(ControlFlags::DiscretionaryAclProtected));
-//! assert!(security_descriptor.flags().contains(ControlFlags::SystemAclProtected));
-//! assert!(security_descriptor.flags().contains(ControlFlags::SelfRelative));
+//! assert_eq!(*security_descriptor.flags(),
+//!     ControlFlags::DiscretionaryAclPresent |
+//!     ControlFlags::SystemAclPresent |
+//!     ControlFlags::DiscretionaryAclProtected |
+//!     ControlFlags::SystemAclProtected |
+//!     ControlFlags::SelfRelative);
 //! 
 //! assert_eq!(security_descriptor.sacl_as_sddl_string().unwrap(), "S:P(AU;FA;GR;;;WD)".to_string());
 //! assert_eq!(security_descriptor.dacl_as_sddl_string().unwrap(), "(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)".to_string());
