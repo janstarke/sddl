@@ -36,7 +36,7 @@ pub const MAX_SUB_AUTHORITIES: u8 = 15;
 pub struct Sid {
     revision: u8,
 
-    #[br(assert(sub_authority_count <= MAX_SUB_AUTHORITIES))]
+    #[br(dbg, assert(sub_authority_count <= MAX_SUB_AUTHORITIES))]
     #[bw(assert(*sub_authority_count <= MAX_SUB_AUTHORITIES))]
     sub_authority_count: u8,
 
