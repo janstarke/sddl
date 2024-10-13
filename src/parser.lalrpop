@@ -2,12 +2,6 @@ use std::str::FromStr;
 
 grammar;
 
-pub Term: u32 = {
-    <n:Number> => n,
-    "(" <t:Term> ")" => t,
-};
-
-
 pub AccessMask: crate::AccessMask = {
     <n:Number> => crate::AccessMask::from(n)
 };

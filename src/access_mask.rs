@@ -1,6 +1,5 @@
 use binrw::{BinRead, BinReaderExt, BinWrite, BinWriterExt};
 use bitflags::bitflags;
-use lalrpop_util::lexer::Token;
 
 use crate::sddl_h::*;
 
@@ -186,15 +185,15 @@ bitflags! {
     #[derive(Eq, PartialEq, Debug)]
     pub struct MandatoryAccessMask: u16 {
         ///  A principal with a lower mandatory level than the object cannot
-        ///  write to the object. 
+        ///  write to the object.
         const SYSTEM_MANDATORY_LABEL_NO_WRITE_UP = 0x01;
 
         ///  A principal with a lower mandatory level than the object cannot
-        ///  read the object. 
+        ///  read the object.
         const SYSTEM_MANDATORY_LABEL_NO_READ_UP = 0x02;
 
         ///  A principal with a lower mandatory level than the object cannot
-        ///  execute the object. 
+        ///  execute the object.
         const SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP = 0x04;
         const _ = !0;
     }
@@ -290,5 +289,22 @@ impl From<&AccessMask> for AdsAccessMask {
 impl From<&AccessMask> for MandatoryAccessMask {
     fn from(value: &AccessMask) -> Self {
         Self::from_bits(value.object_specific_flags()).unwrap()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::AccessMask;
+
+    #[test]
+    fn test_access_mask() {
+        assert_eq!(
+            AccessMask::try_from("0x80000000").unwrap(),
+            AccessMask::GENERIC_READ
+        );
+        assert_ne!(
+            AccessMask::try_from("0x80000001").unwrap(),
+            AccessMask::GENERIC_READ
+        );
     }
 }
