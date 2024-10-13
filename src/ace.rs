@@ -1,5 +1,5 @@
-use std::{fmt::Display, mem};
 use binrw::binrw;
+use std::{fmt::Display, mem};
 
 use crate::{sddl_h::*, AceHeader, AdsAccessMask, Guid, MandatoryAccessMask, Sid};
 
@@ -435,7 +435,11 @@ impl Display for Ace {
         let ace_rights = self.header().mask().sddl_string();
         let object_guid = "";
         let inherit_object_guid = "";
-        let sid_string = self.sid().alias().map(String::from).unwrap_or(self.sid().to_string());
+        let sid_string = self
+            .sid()
+            .alias()
+            .map(String::from)
+            .unwrap_or(self.sid().to_string());
         let sep = SDDL_SEPERATOR;
         write!(f, "{type_string}{sep}{flag_string}{sep}{ace_rights}{sep}{object_guid}{sep}{inherit_object_guid}{sep}{sid_string}")
     }
@@ -456,7 +460,7 @@ impl Ace {
             Ace::SYSTEM_AUDIT_OBJECT_ACE { .. } => SDDL_OBJECT_AUDIT,
             Ace::SYSTEM_AUDIT_CALLBACK_ACE { .. } => SDDL_CALLBACK_AUDIT,
             Ace::SYSTEM_MANDATORY_LABEL_ACE { .. } => SDDL_MANDATORY_LABEL,
-            Ace::SYSTEM_AUDIT_CALLBACK_OBJECT_ACE { .. } =>  "ZU",
+            Ace::SYSTEM_AUDIT_CALLBACK_OBJECT_ACE { .. } => "ZU",
             Ace::SYSTEM_RESOURCE_ATTRIBUTE_ACE { .. } => SDDL_RESOURCE_ATTRIBUTE,
             Ace::SYSTEM_SCOPED_POLICY_ID_ACE { .. } => SDDL_SCOPED_POLICY_ID,
         }

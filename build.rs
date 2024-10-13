@@ -13,7 +13,7 @@ fn main() {
         fs::File::create(Path::new(&out_dir).join("sddl_h.rs")).unwrap(),
     );
 
-    writeln!(out_file, "#[allow(unused)]").unwrap();
+    writeln!(out_file, "#[allow(unused,non_upper_case_globals)]").unwrap();
     writeln!(out_file, "pub (crate) mod sddl_constants {{").unwrap();
 
     for line in reader.lines() {

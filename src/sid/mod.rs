@@ -106,7 +106,7 @@ impl Sid {
                 [6] => Some(SDDL_SERVICE),
                 [18] => Some(SDDL_LOCAL_SYSTEM),
                 [33] => Some(SDDL_WRITE_RESTRICTED_CODE),
-                [84,0,0,0,0,0] => Some(SDDL_USER_MODE_DRIVERS),
+                [84, 0, 0, 0, 0, 0] => Some(SDDL_USER_MODE_DRIVERS),
                 _ => {
                     // map S-1-5-21-* to sddl_domain_alias()
                     // map S-1-5-32-* to sddl_builtin_alias()
