@@ -150,33 +150,27 @@ bitflags! {
         /// Used with system-audit ACEs in a SACL to generate audit messages for
         /// successful access attempts.
         const SUCCESSFUL_ACCESS_ACE_FLAG = 0x40;
+
+        const CRITICAL = 0x20;
+        const TRUST_PROTECTED_FILTER = 0x40;
     }
 }
 
 impl AceFlags {
     pub fn sddl_string(&self) -> String {
         let mut sddl = String::with_capacity(16);
-        if self.contains(Self::OBJECT_INHERIT_ACE) {
-            sddl.push_str(SDDL_OBJECT_INHERIT);
-        }
-        if self.contains(Self::CONTAINER_INHERIT_ACE) {
-            sddl.push_str(SDDL_CONTAINER_INHERIT);
-        }
-        if self.contains(Self::NO_PROPAGATE_INHERIT_ACE) {
-            sddl.push_str(SDDL_NO_PROPAGATE);
-        }
-        if self.contains(Self::INHERIT_ONLY_ACE) {
-            sddl.push_str(SDDL_INHERIT_ONLY);
-        }
-        if self.contains(Self::INHERITED_ACE) {
-            sddl.push_str(SDDL_INHERITED);
-        }
-        if self.contains(Self::SUCCESSFUL_ACCESS_ACE_FLAG) {
-            sddl.push_str(SDDL_AUDIT_SUCCESS);
-        }
-        if self.contains(Self::FAILED_ACCESS_ACE_FLAG) {
-            sddl.push_str(SDDL_AUDIT_FAILURE);
-        }
+        let mut flag = |f: AceFlags, s: &str| {
+            if self.contains(f) { sddl.push_str(s);}
+        };
+        flag(Self::OBJECT_INHERIT_ACE, SDDL_OBJECT_INHERIT);
+        flag(Self::CONTAINER_INHERIT_ACE, SDDL_CONTAINER_INHERIT);
+        flag(Self::NO_PROPAGATE_INHERIT_ACE, SDDL_NO_PROPAGATE);
+        flag(Self::INHERIT_ONLY_ACE, SDDL_INHERIT_ONLY);
+        flag(Self::INHERITED_ACE, SDDL_INHERITED);
+        flag(Self::SUCCESSFUL_ACCESS_ACE_FLAG, SDDL_AUDIT_SUCCESS);
+        flag(Self::FAILED_ACCESS_ACE_FLAG, SDDL_OBJECT_INHERIT);
+        flag(Self::CRITICAL, SDDL_CRITICAL);
+        flag(Self::OBJECT_INHERIT_ACE, SDDL_TRUST_PROTECTED_FILTER);
         sddl
     }
 }

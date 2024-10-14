@@ -1,6 +1,50 @@
 use std::str::FromStr;
 
 grammar;
+/*
+pub Ace: crate::Ace = {
+    "(" <t:AceType> ";" AceCon ")" => {
+        if t == SDDL_ACCESS_ALLOWED {}
+        els if 
+    }
+}
+*/
+AceType: &'static str = {
+    "A" => crate::sddl_h::SDDL_ACCESS_ALLOWED,
+    "D" => crate::sddl_h::SDDL_ACCESS_DENIED,
+    "AU" => crate::sddl_h::SDDL_AUDIT,
+    "AL" => crate::sddl_h::SDDL_ALARM,
+    "OA" => crate::sddl_h::SDDL_OBJECT_ACCESS_ALLOWED,
+    "OD" => crate::sddl_h::SDDL_OBJECT_ACCESS_DENIED,
+    "OU" => crate::sddl_h::SDDL_OBJECT_AUDIT,
+    "OL" => crate::sddl_h::SDDL_OBJECT_ALARM,
+    "XA" => crate::sddl_h::SDDL_CALLBACK_ACCESS_ALLOWED,
+    "XD" => crate::sddl_h::SDDL_CALLBACK_ACCESS_DENIED,
+    "ZA" => crate::sddl_h::SDDL_CALLBACK_OBJECT_ACCESS_ALLOWED,
+    "XU" => crate::sddl_h::SDDL_CALLBACK_AUDIT,
+    "ML" => crate::sddl_h::SDDL_MANDATORY_LABEL,
+    "RA" => crate::sddl_h::SDDL_RESOURCE_ATTRIBUTE,
+    "SP" => crate::sddl_h::SDDL_SCOPED_POLICY_ID,
+    "TL" => crate::sddl_h::SDDL_PROCESS_TRUST_LABEL,
+    "FL" => crate::sddl_h::SDDL_ACCESS_FILTER,
+}
+
+pub AceFlag: crate::AceFlags = {
+    <s:SingleAceFlag> => s,
+    <a:AceFlag> <s:SingleAceFlag> => a | s
+}
+
+pub SingleAceFlag: crate::AceFlags = {
+    "OI" => crate::AceFlags::OBJECT_INHERIT_ACE,
+    "CI" => crate::AceFlags::CONTAINER_INHERIT_ACE,
+    "NP" => crate::AceFlags::NO_PROPAGATE_INHERIT_ACE,
+    "IO" => crate::AceFlags::INHERIT_ONLY_ACE,
+    "ID" => crate::AceFlags::INHERITED_ACE,
+    "CR" => crate::AceFlags::CRITICAL,
+    "SA" => crate::AceFlags::SUCCESSFUL_ACCESS_ACE_FLAG,
+    "FA" => crate::AceFlags::FAILED_ACCESS_ACE_FLAG,
+    "TP" => crate::AceFlags::TRUST_PROTECTED_FILTER,
+}
 
 pub AccessMask: crate::AccessMask = {
     <n:Number> => crate::AccessMask::from(n),
