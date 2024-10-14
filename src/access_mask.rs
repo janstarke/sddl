@@ -3,6 +3,103 @@ use bitflags::bitflags;
 
 use crate::sddl_h::*;
 
+pub mod constants {
+    use super::AccessMask;
+    use lazy_static::lazy_static;
+
+    ///  A principal with a lower mandatory level than the object cannot
+    ///  write to the object.
+    pub const SYSTEM_MANDATORY_LABEL_NO_WRITE_UP: AccessMask = AccessMask::CREATE_CHILD;
+
+    ///  A principal with a lower mandatory level than the object cannot
+    ///  read the object.
+    pub const SYSTEM_MANDATORY_LABEL_NO_READ_UP: AccessMask = AccessMask::DELETE_CHILD;
+
+    ///  A principal with a lower mandatory level than the object cannot
+    ///  execute the object.
+    pub const SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP: AccessMask = AccessMask::LIST_CHILDREN;
+
+    /// The ObjectType GUID identifies a type of child object. The ACE
+    /// controls the trustee's right to create this type of child object.
+    pub const ADS_RIGHT_DS_CREATE_CHILD: AccessMask = AccessMask::CREATE_CHILD;
+
+    /// The ObjectType GUID identifies a type of child object. The ACE
+    /// controls the trustee's right to delete this type of child object.
+    pub const ADS_RIGHT_DS_DELETE_CHILD: AccessMask = AccessMask::DELETE_CHILD;
+    pub const ADS_RIGHT_ACTRL_DS_LIST: AccessMask = AccessMask::LIST_CHILDREN;
+
+    /// The ObjectType GUID identifies a validated write.
+    pub const ADS_RIGHT_DS_SELF: AccessMask = AccessMask::SELF_WRITE;
+
+    /// The ObjectType GUID identifies a property set or property of the
+    /// object. The ACE controls the trustee's right to read the property
+    /// or property set.
+    pub const ADS_RIGHT_DS_READ_PROP: AccessMask = AccessMask::READ_PROPERTY;
+
+    /// The ObjectType GUID identifies a property set or property of the
+    /// object. The ACE controls the trustee's right to write the property
+    /// or property set.
+    pub const ADS_RIGHT_DS_WRITE_PROP: AccessMask = AccessMask::WRITE_PROPERTY;
+    pub const ADS_RIGHT_DS_DELETE_TREE: AccessMask = AccessMask::DELETE_TREE;
+    pub const ADS_RIGHT_DS_LIST_OBJECT: AccessMask = AccessMask::LIST_OBJECT;
+
+    /// The ObjectType GUID identifies an extended access right.
+    pub const ADS_RIGHT_DS_CONTROL_ACCESS: AccessMask = AccessMask::CONTROL_ACCESS;
+
+    lazy_static! {
+        pub static ref FILE_ALL: AccessMask = AccessMask::SYNCHRONIZE
+            | AccessMask::WRITE_OWNER
+            | AccessMask::WRITE_DACL
+            | AccessMask::READ_CONTROL
+            | AccessMask::DELETE
+            | AccessMask::CONTROL_ACCESS
+            | AccessMask::LIST_OBJECT
+            | AccessMask::DELETE_TREE
+            | AccessMask::WRITE_PROPERTY
+            | AccessMask::READ_PROPERTY
+            | AccessMask::SELF_WRITE
+            | AccessMask::LIST_CHILDREN
+            | AccessMask::DELETE_CHILD
+            | AccessMask::CREATE_CHILD;
+        pub static ref FILE_EXECUTE: AccessMask = AccessMask::SYNCHRONIZE
+            | AccessMask::READ_CONTROL
+            | AccessMask::LIST_OBJECT
+            | AccessMask::WRITE_PROPERTY;
+        pub static ref FILE_WRITE: AccessMask = AccessMask::SYNCHRONIZE
+            | AccessMask::READ_CONTROL
+            | AccessMask::CONTROL_ACCESS
+            | AccessMask::READ_PROPERTY
+            | AccessMask::LIST_CHILDREN
+            | AccessMask::DELETE_CHILD;
+        pub static ref FILE_READ: AccessMask = AccessMask::SYNCHRONIZE
+            | AccessMask::READ_CONTROL
+            | AccessMask::LIST_OBJECT
+            | AccessMask::SELF_WRITE
+            | AccessMask::CREATE_CHILD;
+        pub static ref KEY_ALL: AccessMask = AccessMask::WRITE_OWNER
+            | AccessMask::WRITE_DACL
+            | AccessMask::READ_CONTROL
+            | AccessMask::DELETE
+            | AccessMask::WRITE_PROPERTY
+            | AccessMask::READ_PROPERTY
+            | AccessMask::SELF_WRITE
+            | AccessMask::LIST_CHILDREN
+            | AccessMask::DELETE_CHILD
+            | AccessMask::CREATE_CHILD;
+        pub static ref KEY_READ: AccessMask = AccessMask::READ_CONTROL
+            | AccessMask::READ_PROPERTY
+            | AccessMask::SELF_WRITE
+            | AccessMask::CREATE_CHILD;
+        pub static ref KEY_WRITE: AccessMask = AccessMask::READ_CONTROL
+            | AccessMask::LIST_CHILDREN
+            | AccessMask::DELETE_CHILD;
+        pub static ref KEY_EXECUTE: AccessMask = AccessMask::READ_CONTROL
+            | AccessMask::READ_PROPERTY
+            | AccessMask::SELF_WRITE
+            | AccessMask::CREATE_CHILD;
+    }
+}
+
 bitflags! {
     #[derive(Eq, PartialEq, Debug, Copy, Clone)]
     pub struct AccessMask: u32 {
@@ -127,74 +224,17 @@ bitflags! {
         /// Specifies access to delete an object.
         const DELETE = 0x00010000;
 
+        const CONTROL_ACCESS = 0x00000100;
+        const LIST_OBJECT = 0x00000080;
+        const DELETE_TREE = 0x00000040;
+        const WRITE_PROPERTY = 0x00000020;
+        const READ_PROPERTY = 0x00000010;
+        const SELF_WRITE = 0x00000008;
+        const LIST_CHILDREN = 0x00000004;
+        const DELETE_CHILD = 0x00000002;
+        const CREATE_CHILD = 0x00000001;
+
         // The source may set any bits
-        const _ = !0;
-    }
-}
-
-impl AccessMask {
-    /// returns the lower 16 bits of the access mask
-    ///
-    /// ```rust
-    /// use sddl::AccessMask;
-    /// assert_eq!(AccessMask::GENERIC_READ.object_specific_flags(), 0);
-    /// assert_eq!((AccessMask::GENERIC_READ | AccessMask::GENERIC_WRITE).object_specific_flags(), 0);
-    ///
-    /// assert_eq!(AccessMask::from_bits(0x80000000).unwrap(), AccessMask::GENERIC_READ);
-    /// assert_eq!(AccessMask::from_bits(0x80001234).unwrap().object_specific_flags(), 0x1234);
-    /// assert_eq!(AccessMask::from_bits(0x00001234).unwrap().object_specific_flags(), 0x1234);
-    /// ```
-    pub fn object_specific_flags(&self) -> u16 {
-        let bytes = self.bits().to_be_bytes();
-        u16::from_be_bytes([bytes[2], bytes[3]])
-    }
-}
-
-bitflags! {
-    #[derive(Eq, PartialEq, Debug)]
-    pub struct AdsAccessMask: u16 {
-
-        /// The ObjectType GUID identifies an extended access right.
-        const ADS_RIGHT_DS_CONTROL_ACCESS = 0x00000100;
-
-        /// The ObjectType GUID identifies a type of child object. The ACE
-        /// controls the trustee's right to create this type of child object.
-        const ADS_RIGHT_DS_CREATE_CHILD = 0x00000001;
-
-        /// The ObjectType GUID identifies a type of child object. The ACE
-        /// controls the trustee's right to delete this type of child object.
-        const ADS_RIGHT_DS_DELETE_CHILD = 0x00000002;
-
-        /// The ObjectType GUID identifies a property set or property of the
-        /// object. The ACE controls the trustee's right to read the property
-        /// or property set.
-        const ADS_RIGHT_DS_READ_PROP = 0x00000010;
-
-        /// The ObjectType GUID identifies a property set or property of the
-        /// object. The ACE controls the trustee's right to write the property
-        /// or property set.
-        const ADS_RIGHT_DS_WRITE_PROP = 0x00000020;
-
-        /// The ObjectType GUID identifies a validated write.
-        const ADS_RIGHT_DS_SELF = 0x00000008;
-        const _ = !0;
-    }
-}
-
-bitflags! {
-    #[derive(Eq, PartialEq, Debug)]
-    pub struct MandatoryAccessMask: u16 {
-        ///  A principal with a lower mandatory level than the object cannot
-        ///  write to the object.
-        const SYSTEM_MANDATORY_LABEL_NO_WRITE_UP = 0x01;
-
-        ///  A principal with a lower mandatory level than the object cannot
-        ///  read the object.
-        const SYSTEM_MANDATORY_LABEL_NO_READ_UP = 0x02;
-
-        ///  A principal with a lower mandatory level than the object cannot
-        ///  execute the object.
-        const SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP = 0x04;
         const _ = !0;
     }
 }
@@ -202,39 +242,24 @@ bitflags! {
 impl AccessMask {
     pub fn sddl_string(&self) -> String {
         let mut sddl = String::with_capacity(32);
-        if self.contains(Self::GENERIC_READ) {
-            sddl.push_str(SDDL_GENERIC_READ);
-        }
-        if self.contains(Self::GENERIC_WRITE) {
-            sddl.push_str(SDDL_GENERIC_WRITE);
-        }
-        if self.contains(Self::GENERIC_EXECUTE) {
-            sddl.push_str(SDDL_GENERIC_EXECUTE);
-        }
-        if self.contains(Self::GENERIC_ALL) {
-            sddl.push_str(SDDL_GENERIC_ALL);
-        }
-        if self.contains(Self::MAXIMUM_ALLOWED) {
-            sddl.push_str("MA");
-        }
-        if self.contains(Self::ACCESS_SYSTEM_SECURITY) {
-            sddl.push_str("AS");
-        }
-        if self.contains(Self::SYNCHRONIZE) {
-            sddl.push_str("SY");
-        }
-        if self.contains(Self::WRITE_OWNER) {
-            sddl.push_str("WO");
-        }
-        if self.contains(Self::WRITE_DACL) {
-            sddl.push_str("WD");
-        }
-        if self.contains(Self::READ_CONTROL) {
-            sddl.push_str("RC");
-        }
-        if self.contains(Self::DELETE) {
-            sddl.push_str("SD");
-        }
+
+        let mut flag = |mask: AccessMask, s: &str| {
+            if self.contains(mask) {
+                sddl.push_str(s);
+            }
+        };
+
+        flag(Self::GENERIC_READ, SDDL_GENERIC_READ);
+        flag(Self::GENERIC_WRITE, SDDL_GENERIC_WRITE);
+        flag(Self::GENERIC_EXECUTE, SDDL_GENERIC_EXECUTE);
+        flag(Self::GENERIC_ALL, SDDL_GENERIC_ALL);
+        flag(Self::MAXIMUM_ALLOWED, "MA");
+        flag(Self::ACCESS_SYSTEM_SECURITY, "AS");
+        flag(Self::SYNCHRONIZE, "SY");
+        flag(Self::WRITE_OWNER, SDDL_WRITE_OWNER);
+        flag(Self::WRITE_DACL, SDDL_WRITE_DAC);
+        flag(Self::READ_CONTROL, SDDL_READ_CONTROL);
+        flag(Self::DELETE, SDDL_STANDARD_DELETE);
         sddl
     }
 }
@@ -280,21 +305,11 @@ impl BinWrite for AccessMask {
     }
 }
 
-impl From<&AccessMask> for AdsAccessMask {
-    fn from(value: &AccessMask) -> Self {
-        Self::from_bits(value.object_specific_flags()).unwrap()
-    }
-}
-
-impl From<&AccessMask> for MandatoryAccessMask {
-    fn from(value: &AccessMask) -> Self {
-        Self::from_bits(value.object_specific_flags()).unwrap()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::AccessMask;
+
+    use super::constants::*;
 
     #[test]
     fn test_access_mask() {
@@ -306,5 +321,17 @@ mod tests {
             AccessMask::try_from("0x80000001").unwrap(),
             AccessMask::GENERIC_READ
         );
+    }
+
+    #[test]
+    fn test_statics() {
+        assert_eq!(FILE_ALL.bits(), 0x001F01FF);
+        assert_eq!(FILE_EXECUTE.bits(), 0x001200A0);
+        assert_eq!(FILE_WRITE.bits(), 0x00120116);
+        assert_eq!(FILE_READ.bits(), 0x00120089);
+        assert_eq!(KEY_ALL.bits(), 0x000F003F);
+        assert_eq!(KEY_READ.bits(), 0x00020019);
+        assert_eq!(KEY_EXECUTE.bits(), 0x00020019);
+        assert_eq!(KEY_WRITE.bits(), 0x00020006);
     }
 }

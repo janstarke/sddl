@@ -25,3 +25,38 @@ Number: u32 = {
         }
     }
 }
+
+SingleAccessMask: crate::AccessMask = {
+    "GR" => crate::AccessMask::GENERIC_READ,
+    "GW" => crate::AccessMask::GENERIC_WRITE,
+    "GX" => crate::AccessMask::GENERIC_EXECUTE,
+    "GA" => crate::AccessMask::GENERIC_ALL,
+    "MA" => crate::AccessMask::MAXIMUM_ALLOWED,
+    "AS" => crate::AccessMask::ACCESS_SYSTEM_SECURITY,
+    "WO" => crate::AccessMask::WRITE_OWNER,
+    "WD" => crate::AccessMask::WRITE_DACL,
+    "RC" => crate::AccessMask::READ_CONTROL,
+    "SD" => crate::AccessMask::DELETE,
+    "CR" => crate::AccessMask::CONTROL_ACCESS,
+
+    "CA" => crate::constants::ADS_RIGHT_DS_CONTROL_ACCESS,
+    "LO" => crate::constants::ADS_RIGHT_DS_LIST_OBJECT,
+    "DT" => crate::constants::ADS_RIGHT_DS_DELETE_TREE,
+    "WP" => crate::constants::ADS_RIGHT_DS_WRITE_PROP,
+    "RP" => crate::constants::ADS_RIGHT_DS_READ_PROP,
+    "SW" => crate::constants::ADS_RIGHT_DS_SELF,
+    "LC" => crate::constants::ADS_RIGHT_ACTRL_DS_LIST,
+    "DC" => crate::constants::ADS_RIGHT_DS_DELETE_CHILD,
+    "CC" => crate::constants::ADS_RIGHT_DS_CREATE_CHILD,
+    "NW" => crate::constants::SYSTEM_MANDATORY_LABEL_NO_WRITE_UP,
+    "NR" => crate::constants::SYSTEM_MANDATORY_LABEL_NO_READ_UP,
+    "NX" => crate::constants::SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP,
+    "FA" => *crate::constants::FILE_ALL,
+    "FR" => *crate::constants::FILE_READ,
+    "FW" => *crate::constants::FILE_WRITE,
+    "FX" => *crate::constants::FILE_EXECUTE,
+    "KA" => *crate::constants::KEY_ALL,
+    "KR" => *crate::constants::KEY_READ,
+    "KW" => *crate::constants::KEY_WRITE,
+    "KX" => *crate::constants::KEY_EXECUTE,
+}

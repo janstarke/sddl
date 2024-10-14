@@ -1,7 +1,7 @@
 use binrw::binrw;
 use std::{fmt::Display, mem};
 
-use crate::{sddl_h::*, AceHeader, AdsAccessMask, Guid, MandatoryAccessMask, Sid};
+use crate::{sddl_h::*, AceHeader, Guid, Sid};
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
 #[binrw]
@@ -30,9 +30,6 @@ pub enum Ace {
     #[brw(magic = 0x05u8)]
     ACCESS_ALLOWED_OBJECT_ACE {
         header: AceHeader,
-        #[br(calc(header.mask().into()))]
-        #[bw(ignore)]
-        mask: AdsAccessMask,
 
         /// A GUID that identifies a property set, property, extended right, or
         /// type of child object. The purpose of this GUID depends on the user
@@ -90,10 +87,6 @@ pub enum Ace {
         ///  The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
-
-        #[br(calc(header.mask().into()))]
-        #[bw(ignore)]
-        mask: AdsAccessMask,
     },
 
     /// The ACCESS_ALLOWED_CALLBACK_ACE structure defines an ACE for the DACL
@@ -187,10 +180,6 @@ pub enum Ace {
         #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
         #[bw(ignore)]
         is_conditional: bool,
-
-        #[br(calc(header.mask().into()))]
-        #[bw(ignore)]
-        mask: AdsAccessMask,
     },
 
     /// The ACCESS_DENIED_CALLBACK_OBJECT_ACE structure defines an ACE that
@@ -234,10 +223,6 @@ pub enum Ace {
         #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
         #[bw(ignore)]
         is_conditional: bool,
-
-        #[br(calc(header.mask().into()))]
-        #[bw(ignore)]
-        mask: AdsAccessMask,
     },
 
     /// The SYSTEM_AUDIT_ACE structure defines an access ACE for the system
@@ -292,10 +277,6 @@ pub enum Ace {
         /// determined by the AceSize field of the ACE_HEADER.
         #[br(count=*header.ace_size() as usize - (mem::size_of::<Guid>() + mem::size_of::<Guid>() + sid.len()))]
         application_data: Vec<u8>,
-
-        #[br(calc(header.mask().into()))]
-        #[bw(ignore)]
-        mask: AdsAccessMask,
     },
 
     /// The SYSTEM_AUDIT_CALLBACK_ACE structure defines an ACE for the SACL that
@@ -344,10 +325,6 @@ pub enum Ace {
         ///  values.
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
-
-        #[br(calc(header.mask().into()))]
-        #[bw(ignore)]
-        mask: MandatoryAccessMask,
     },
 
     /// The SYSTEM_AUDIT_CALLBACK_OBJECT_ACE structure defines an ACE for a
@@ -384,10 +361,6 @@ pub enum Ace {
         /// determined by the AceSize field of the ACE_HEADER.
         #[br(count=*header.ace_size() as usize - (mem::size_of::<Guid>() + mem::size_of::<Guid>() + sid.len()))]
         application_data: Vec<u8>,
-
-        #[br(calc(header.mask().into()))]
-        #[bw(ignore)]
-        mask: AdsAccessMask,
     },
 
     /// The SYSTEM_RESOURCE_ATTRIBUTE_ACE structure defines an ACE for the

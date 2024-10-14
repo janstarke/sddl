@@ -60,7 +60,11 @@ pub use sid::*;
 pub use acl::*;
 pub use ace::*;
 pub use ace_header::*;
-pub use access_mask::*;
+pub use access_mask::AccessMask;
 pub use guid::*;
 pub use error::*;
 pub(crate) use offset::*;
+
+pub mod constants {
+    pub use crate::access_mask::constants::*;
+}
