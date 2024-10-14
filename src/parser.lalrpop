@@ -3,7 +3,9 @@ use std::str::FromStr;
 grammar;
 
 pub AccessMask: crate::AccessMask = {
-    <n:Number> => crate::AccessMask::from(n)
+    <n:Number> => crate::AccessMask::from(n),
+    <s:SingleAccessMask> => s,
+    <a:AccessMask> <s:SingleAccessMask> => a | s
 };
 
 

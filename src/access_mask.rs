@@ -1,5 +1,8 @@
 use binrw::{BinRead, BinReaderExt, BinWrite, BinWriterExt};
 use bitflags::bitflags;
+use constants::{
+    FILE_ALL, FILE_EXECUTE, FILE_READ, FILE_WRITE, KEY_ALL, KEY_EXECUTE, KEY_READ, KEY_WRITE,
+};
 
 use crate::sddl_h::*;
 
@@ -90,9 +93,8 @@ pub mod constants {
             | AccessMask::READ_PROPERTY
             | AccessMask::SELF_WRITE
             | AccessMask::CREATE_CHILD;
-        pub static ref KEY_WRITE: AccessMask = AccessMask::READ_CONTROL
-            | AccessMask::LIST_CHILDREN
-            | AccessMask::DELETE_CHILD;
+        pub static ref KEY_WRITE: AccessMask =
+            AccessMask::READ_CONTROL | AccessMask::LIST_CHILDREN | AccessMask::DELETE_CHILD;
         pub static ref KEY_EXECUTE: AccessMask = AccessMask::READ_CONTROL
             | AccessMask::READ_PROPERTY
             | AccessMask::SELF_WRITE
@@ -241,26 +243,43 @@ bitflags! {
 
 impl AccessMask {
     pub fn sddl_string(&self) -> String {
-        let mut sddl = String::with_capacity(32);
+        if *self == *FILE_ALL {
+            SDDL_FILE_ALL.into()
+        } else if *self == *FILE_READ {
+            SDDL_FILE_READ.into()
+        } else if *self == *FILE_WRITE {
+            SDDL_FILE_WRITE.into()
+        } else if *self == *FILE_EXECUTE {
+            SDDL_FILE_EXECUTE.into()
+        } else if *self == *KEY_ALL {
+            SDDL_KEY_ALL.into()
+        } else if *self == *KEY_READ {
+            SDDL_KEY_READ.into()
+        } else if *self == *KEY_WRITE {
+            SDDL_KEY_WRITE.into()
+        } else if *self == *KEY_EXECUTE {
+            SDDL_KEY_EXECUTE.into()
+        } else {
+            let mut sddl = String::with_capacity(32);
+            let mut flag = |mask: AccessMask, s: &str| {
+                if self.contains(mask) {
+                    sddl.push_str(s);
+                }
+            };
 
-        let mut flag = |mask: AccessMask, s: &str| {
-            if self.contains(mask) {
-                sddl.push_str(s);
-            }
-        };
-
-        flag(Self::GENERIC_READ, SDDL_GENERIC_READ);
-        flag(Self::GENERIC_WRITE, SDDL_GENERIC_WRITE);
-        flag(Self::GENERIC_EXECUTE, SDDL_GENERIC_EXECUTE);
-        flag(Self::GENERIC_ALL, SDDL_GENERIC_ALL);
-        flag(Self::MAXIMUM_ALLOWED, "MA");
-        flag(Self::ACCESS_SYSTEM_SECURITY, "AS");
-        flag(Self::SYNCHRONIZE, "SY");
-        flag(Self::WRITE_OWNER, SDDL_WRITE_OWNER);
-        flag(Self::WRITE_DACL, SDDL_WRITE_DAC);
-        flag(Self::READ_CONTROL, SDDL_READ_CONTROL);
-        flag(Self::DELETE, SDDL_STANDARD_DELETE);
-        sddl
+            flag(Self::GENERIC_READ, SDDL_GENERIC_READ);
+            flag(Self::GENERIC_WRITE, SDDL_GENERIC_WRITE);
+            flag(Self::GENERIC_EXECUTE, SDDL_GENERIC_EXECUTE);
+            flag(Self::GENERIC_ALL, SDDL_GENERIC_ALL);
+            flag(Self::MAXIMUM_ALLOWED, "MA");
+            flag(Self::ACCESS_SYSTEM_SECURITY, "AS");
+            flag(Self::SYNCHRONIZE, "SY");
+            flag(Self::WRITE_OWNER, SDDL_WRITE_OWNER);
+            flag(Self::WRITE_DACL, SDDL_WRITE_DAC);
+            flag(Self::READ_CONTROL, SDDL_READ_CONTROL);
+            flag(Self::DELETE, SDDL_STANDARD_DELETE);
+            sddl
+        }
     }
 }
 
@@ -312,7 +331,7 @@ mod tests {
     use super::constants::*;
 
     #[test]
-    fn test_access_mask() {
+    fn test_simple_mask() {
         assert_eq!(
             AccessMask::try_from("0x80000000").unwrap(),
             AccessMask::GENERIC_READ
@@ -321,6 +340,19 @@ mod tests {
             AccessMask::try_from("0x80000001").unwrap(),
             AccessMask::GENERIC_READ
         );
+    }
+
+    #[test]
+    fn test_complex_mask1() {
+        assert_eq!(
+            AccessMask::try_from("GRGXWP").unwrap(),
+            AccessMask::GENERIC_READ | AccessMask::GENERIC_EXECUTE | AccessMask::WRITE_PROPERTY
+        );
+    }
+
+    #[test]
+    fn test_complex_mask2() {
+        assert_eq!(AccessMask::try_from("FA").unwrap(), *FILE_ALL);
     }
 
     #[test]
