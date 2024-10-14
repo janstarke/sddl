@@ -30,22 +30,24 @@ impl Display for IdentifierAuthority {
 macro_rules! predefined_authority {
     ($name: ident, $value: expr) => {
         #[allow(unused)]
-        pub const $name: IdentifierAuthority = IdentifierAuthority {
+        pub const $name: crate::IdentifierAuthority = crate::IdentifierAuthority {
             value: [0, 0, 0, 0, 0, $value],
         };
     };
 }
 
-predefined_authority!(SECURITY_NULL_SID_AUTHORITY, 0);
-predefined_authority!(SECURITY_WORLD_SID_AUTHORITY, 1);
-predefined_authority!(SECURITY_LOCAL_SID_AUTHORITY, 2);
-predefined_authority!(SECURITY_CREATOR_SID_AUTHORITY, 3);
-predefined_authority!(SECURITY_NON_UNIQUE_AUTHORITY, 4);
-predefined_authority!(SECURITY_NT_AUTHORITY, 5);
-predefined_authority!(SECURITY_SITE_SERVER_AUTHORITY, 6);
-predefined_authority!(SECURITY_INTERNET_SITE_AUTHORITY, 7);
-predefined_authority!(SECURITY_EXCHANGE_AUTHORITY, 8);
-predefined_authority!(SECURITY_RESOURCE_MANAGER_AUTHORITY, 9);
+pub mod constants {
+    predefined_authority!(SECURITY_NULL_SID_AUTHORITY, 0);
+    predefined_authority!(SECURITY_WORLD_SID_AUTHORITY, 1);
+    predefined_authority!(SECURITY_LOCAL_SID_AUTHORITY, 2);
+    predefined_authority!(SECURITY_CREATOR_SID_AUTHORITY, 3);
+    predefined_authority!(SECURITY_NON_UNIQUE_AUTHORITY, 4);
+    predefined_authority!(SECURITY_NT_AUTHORITY, 5);
+    predefined_authority!(SECURITY_SITE_SERVER_AUTHORITY, 6);
+    predefined_authority!(SECURITY_INTERNET_SITE_AUTHORITY, 7);
+    predefined_authority!(SECURITY_EXCHANGE_AUTHORITY, 8);
+    predefined_authority!(SECURITY_RESOURCE_MANAGER_AUTHORITY, 9);
+}
 
 impl IdentifierAuthority {
     pub fn is_well_known(&self) -> bool {
@@ -53,6 +55,14 @@ impl IdentifierAuthority {
     }
 
     pub const fn from(value: u8) -> Self {
-        Self { value: [0,0,0,0,0,value] }
+        Self {
+            value: [0, 0, 0, 0, 0, value],
+        }
+    }
+}
+
+impl From<[u8; 6]> for IdentifierAuthority {
+    fn from(value: [u8; 6]) -> Self {
+        Self { value }
     }
 }

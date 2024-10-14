@@ -4,7 +4,10 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("ParseError: {0}")]
-    ParseError(String)
+    ParseError(String),
+
+    #[error("IllegalSid: '{0}' (reason: {1})")]
+    IllegalSidFormat(String, &'static str),
 }
 
 impl<L, T, E> From<ParseError<L, T, E>> for Error 

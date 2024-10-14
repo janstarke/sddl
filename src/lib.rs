@@ -67,4 +67,5 @@ pub(crate) use offset::*;
 
 pub mod constants {
     pub use crate::access_mask::constants::*;
+    pub use crate::sid::constants::*;
 }

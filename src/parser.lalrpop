@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 grammar;
+// (Type;Flags;ObjectType;InheritedObjectType;SID[;ExtraData])
 /*
 pub Ace: crate::Ace = {
     "(" <t:AceType> ";" AceCon ")" => {
@@ -9,6 +10,16 @@ pub Ace: crate::Ace = {
     }
 }
 */
+
+Sid: crate::Sid = {
+    "AA" => crate::Sid::new(crate::constants::SECURITY_NT_AUTHORITY, &[32, 579]),
+    <s:r#"S-1-\d+(-\d+)*"#> => crate::Sid::try_from(s).unwrap()
+}
+
+Guid: crate::Guid = {
+    <guid: r"[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}"> => guid.try_into().unwrap()
+}
+
 AceType: &'static str = {
     "A" => crate::sddl_h::SDDL_ACCESS_ALLOWED,
     "D" => crate::sddl_h::SDDL_ACCESS_DENIED,

@@ -1,12 +1,15 @@
 use std::fmt::{Debug, Display};
 use std::mem;
+use std::str::FromStr;
 
 use binrw::binrw;
 use getset::Getters;
 
 mod identifier_authority;
 
+pub use identifier_authority::constants::*;
 pub use identifier_authority::*;
+use lazy_regex::regex_captures;
 
 use crate::sddl_h::*;
 
@@ -55,17 +58,37 @@ impl Display for Sid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let revision = self.revision();
         let identifier_authority = self.identifier_authority();
-        let sub_authorities = self
-            .sub_authority()
-            .iter()
-            .map(|u| u.to_string())
-            .collect::<Vec<_>>()
-            .join("-");
+
+        let mut sub_authorities = Vec::new();
+        let mut iter = self.sub_authority().iter();
+        sub_authorities.push(iter.next().unwrap().to_string());
+
+        // the first and last sub authority will have no leading 0s
+        if let Some(mut current) = iter.next() {
+            for next in iter {
+                sub_authorities.push(format!("{current:09}"));
+                current = next;
+            }
+            sub_authorities.push(current.to_string());
+        }
+        let sub_authorities = sub_authorities.join("-");
+
         write!(f, "S-{revision}-{identifier_authority}-{sub_authorities}")
     }
 }
 
 impl Sid {
+    pub fn new(identifier_authority: IdentifierAuthority, sub_authority: &[u32]) -> Self {
+        let alias = Self::sddl_alias(&identifier_authority, sub_authority);
+        Self {
+            revision: 1,
+            sub_authority_count: sub_authority.len() as u8,
+            identifier_authority,
+            sub_authority: sub_authority.to_vec(),
+            alias,
+        }
+    }
+
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         mem::size_of::<u8>()
@@ -209,5 +232,96 @@ impl Sid {
 impl Debug for Sid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{self}")
+    }
+}
+
+impl TryFrom<&str> for Sid {
+    type Error = crate::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        if let Some((_, revision, authority, sub_authorities)) =
+            regex_captures!(r#"^S-(1)-(\d+)((?:-\d+)*)$"#, value)
+        {
+            let revision = u8::from_str(revision).map_err(|_| {
+                Self::Error::IllegalSidFormat(value.into(), "illegal revision number")
+            })?;
+
+            let authority: [u8; 8] = u64::from_str(authority)
+                .map_err(|_| {
+                    Self::Error::IllegalSidFormat(value.into(), "invalid authority format")
+                })?
+                .to_be_bytes();
+            let identifier_authority = [
+                authority[2],
+                authority[3],
+                authority[4],
+                authority[5],
+                authority[6],
+                authority[7],
+            ]
+            .into();
+
+            // we need place for at least the leading dash and one subauthority
+            if sub_authorities.len() < 2 {
+                return Err(Self::Error::IllegalSidFormat(
+                    value.into(),
+                    "too less sub authorities",
+                ));
+            }
+
+            debug_assert_eq!(sub_authorities.chars().next().unwrap(), '-');
+            let mut sub_authority = Vec::new();
+            for part in sub_authorities[1..].split('-').map(u32::from_str) {
+                match part {
+                    Ok(p) => sub_authority.push(p),
+                    Err(_) => {
+                        return Err(Self::Error::IllegalSidFormat(
+                            value.into(),
+                            "illegal sub authority format",
+                        ));
+                    }
+                }
+            }
+
+            let sub_authority_count = u8::try_from(sub_authority.len()).map_err(|_| {
+                Self::Error::IllegalSidFormat(value.into(), "illegal number of sub authorities")
+            })?;
+            let alias = Self::sddl_alias(&identifier_authority, &sub_authority);
+            Ok(Self {
+                revision,
+                identifier_authority,
+                sub_authority_count,
+                sub_authority,
+                alias,
+            })
+        } else {
+            Err(Self::Error::IllegalSidFormat(
+                value.into(),
+                "SID does not match the expected pattern",
+            ))
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Sid;
+
+    #[test]
+    fn test_null_sid() {
+        let my_sid = "S-1-1-0";
+        assert_eq!(my_sid, Sid::try_from(my_sid).unwrap().to_string());
+    }
+
+    #[test]
+    fn test_iisusrs() {
+        let my_sid = "S-1-5-32-568";
+        assert_eq!(my_sid, Sid::try_from(my_sid).unwrap().to_string());
+    }
+
+    #[test]
+    fn test_domain_sid() {
+        let my_sid = "S-1-5-21-2623811015-3361044348-030300820-1013";
+        assert_eq!(my_sid, Sid::try_from(my_sid).unwrap().to_string());
     }
 }

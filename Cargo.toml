@@ -19,6 +19,7 @@ thiserror = "1.0.64"
 uuid = {version="1.6", features=["serde", "v4"]}
 lalrpop-util = { version = "0.22.0", features = ["lexer", "unicode"] }
 lazy_static = "1.5"
+lazy-regex = "3"
 
 [build-dependencies]
 lazy-regex = "3"

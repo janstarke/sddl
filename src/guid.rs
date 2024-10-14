@@ -45,3 +45,11 @@ impl Debug for Guid {
         std::fmt::Debug::fmt(&self.0, f)
     }
 }
+
+impl<'v> TryFrom<&'v str> for Guid {
+    type Error = <uuid::Uuid as std::convert::TryFrom<&'v str>>::Error;
+
+    fn try_from(value: &'v str) -> Result<Self, Self::Error> {
+        Ok(Self(Uuid::try_from(value)?))
+    }
+}
