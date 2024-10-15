@@ -62,6 +62,9 @@ pub enum Ace {
         /// The SID of a trustee. The length of the SID MUST be a multiple of 4.
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The ACCESS_DENIED_ACE structure defines an ACE for the DACL that
@@ -73,6 +76,9 @@ pub enum Ace {
         /// The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The ACCESS_DENIED_OBJECT_ACE structure defines an ACE that controls
@@ -90,6 +96,9 @@ pub enum Ace {
         ///  The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The ACCESS_ALLOWED_CALLBACK_ACE structure defines an ACE for the DACL
@@ -114,6 +123,9 @@ pub enum Ace {
         #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
         #[bw(ignore)]
         is_conditional: bool,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The ACCESS_DENIED_CALLBACK_ACE structure defines an ACE for the DACL
@@ -138,6 +150,9 @@ pub enum Ace {
         #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
         #[bw(ignore)]
         is_conditional: bool,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The ACCESS_ALLOWED_CALLBACK_OBJECT_ACE structure defines an ACE that
@@ -183,6 +198,9 @@ pub enum Ace {
         #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
         #[bw(ignore)]
         is_conditional: bool,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The ACCESS_DENIED_CALLBACK_OBJECT_ACE structure defines an ACE that
@@ -226,6 +244,9 @@ pub enum Ace {
         #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
         #[bw(ignore)]
         is_conditional: bool,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The SYSTEM_AUDIT_ACE structure defines an access ACE for the system
@@ -244,6 +265,9 @@ pub enum Ace {
         ///  access rights for all trustees.
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The SYSTEM_AUDIT_OBJECT_ACE structure defines an ACE for a SACL. The ACE
@@ -280,6 +304,13 @@ pub enum Ace {
         /// determined by the AceSize field of the ACE_HEADER.
         #[br(count=*header.ace_size() as usize - (mem::size_of::<Guid>() + mem::size_of::<Guid>() + sid.len()))]
         application_data: Vec<u8>,
+
+        #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
+        #[bw(ignore)]
+        is_conditional: bool,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The SYSTEM_AUDIT_CALLBACK_ACE structure defines an ACE for the SACL that
@@ -311,6 +342,9 @@ pub enum Ace {
         #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
         #[bw(ignore)]
         is_conditional: bool,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The SYSTEM_MANDATORY_LABEL_ACE structure defines an ACE for the SACL
@@ -328,6 +362,9 @@ pub enum Ace {
         ///  values.
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The SYSTEM_AUDIT_CALLBACK_OBJECT_ACE structure defines an ACE for a
@@ -364,6 +401,13 @@ pub enum Ace {
         /// determined by the AceSize field of the ACE_HEADER.
         #[br(count=*header.ace_size() as usize - (mem::size_of::<Guid>() + mem::size_of::<Guid>() + sid.len()))]
         application_data: Vec<u8>,
+
+        #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
+        #[bw(ignore)]
+        is_conditional: bool,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The SYSTEM_RESOURCE_ATTRIBUTE_ACE structure defines an ACE for the
@@ -386,6 +430,13 @@ pub enum Ace {
         /// as described in section 2.4.10.1
         #[br(count=*header.ace_size() as usize - sid.len())]
         application_data: Vec<u8>,
+
+        #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
+        #[bw(ignore)]
+        is_conditional: bool,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 
     /// The SYSTEM_SCOPED_POLICY_ID_ACE structure defines an ACE for the purpose
@@ -401,6 +452,9 @@ pub enum Ace {
         ///  performed.
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
+
+        #[br(count = usize::from(*header.expected_padding()))]
+        _padding: Vec<u8>,
     },
 }
 
@@ -441,8 +495,122 @@ macro_rules! ctor {
     };
 }
 
+macro_rules! ctor_object {
+    ($ctor_name: ident, $ty: ident) => {
+        pub fn $ctor_name(
+            flags: AceFlags,
+            mask: AccessMask,
+            object_type: Guid,
+            inherited_object_type: Guid,
+            sid: Sid,
+        ) -> Self {
+            let header = AceHeader::new(
+                flags,
+                sid.raw_size() + object_type.raw_size() + inherited_object_type.raw_size(),
+                mask,
+            );
+            let _padding = vec![0u8; *header.expected_padding() as usize];
+            Self::$ty {
+                header,
+                sid,
+                object_type,
+                inherited_object_type,
+                _padding,
+            }
+        }
+    };
+}
+
+macro_rules! ctor_appdata {
+    ($ctor_name: ident, $ty: ident) => {
+        pub fn $ctor_name(
+            flags: AceFlags,
+            mask: AccessMask,
+            sid: Sid,
+            application_data: Vec<u8>,
+        ) -> Self {
+            let header =
+                AceHeader::new(flags, sid.raw_size() + application_data.len() as u16, mask);
+
+            let is_conditional = if application_data.len() >= 4 {
+                application_data[0..4] == [0x61, 0x72, 0x74, 0x78]
+            } else {
+                false
+            };
+
+            let _padding = vec![0u8; *header.expected_padding() as usize];
+            Self::$ty {
+                header,
+                sid,
+                application_data,
+                is_conditional,
+                _padding,
+            }
+        }
+    };
+}
+
+macro_rules! ctor_object_appdata {
+    ($ctor_name: ident, $ty: ident) => {
+        pub fn $ctor_name(
+            flags: AceFlags,
+            mask: AccessMask,
+            object_type: Guid,
+            inherited_object_type: Guid,
+            sid: Sid,
+            application_data: Vec<u8>,
+        ) -> Self {
+            let header = AceHeader::new(
+                flags,
+                sid.raw_size()
+                    + object_type.raw_size()
+                    + inherited_object_type.raw_size()
+                    + application_data.len() as u16,
+                mask,
+            );
+
+            let is_conditional = if application_data.len() >= 4 {
+                application_data[0..4] == [0x61, 0x72, 0x74, 0x78]
+            } else {
+                false
+            };
+
+            let _padding = vec![0u8; *header.expected_padding() as usize];
+            Self::$ty {
+                header,
+                sid,
+                object_type,
+                inherited_object_type,
+                application_data,
+                is_conditional,
+                _padding,
+            }
+        }
+    };
+}
+
 impl Ace {
     ctor!(access_allowed, ACCESS_ALLOWED_ACE);
+    ctor!(access_denied, ACCESS_DENIED_ACE);
+    ctor_object!(access_allowed_object, ACCESS_ALLOWED_OBJECT_ACE);
+    ctor_object!(access_denied_object, ACCESS_DENIED_OBJECT_ACE);
+    ctor_appdata!(access_allowed_callback, ACCESS_ALLOWED_CALLBACK_ACE);
+    ctor_appdata!(access_denied_callback, ACCESS_DENIED_CALLBACK_ACE);
+    ctor_object_appdata!(
+        access_allowed_object_callback,
+        ACCESS_ALLOWED_CALLBACK_OBJECT_ACE
+    );
+    ctor_object_appdata!(
+        access_denied_object_callback,
+        ACCESS_DENIED_CALLBACK_OBJECT_ACE
+    );
+    ctor!(audit, SYSTEM_AUDIT_ACE);
+    ctor_object_appdata!(audit_object, SYSTEM_AUDIT_OBJECT_ACE);
+    ctor_appdata!(audit_callback, SYSTEM_AUDIT_CALLBACK_ACE);
+    ctor!(mandatory_label, SYSTEM_MANDATORY_LABEL_ACE);
+    ctor_object_appdata!(audit_callback_object, SYSTEM_AUDIT_CALLBACK_OBJECT_ACE);
+    ctor_object_appdata!(resource_attribute, SYSTEM_RESOURCE_ATTRIBUTE_ACE);
+    ctor!(scoped_policy_id, SYSTEM_SCOPED_POLICY_ID_ACE);
 
     fn type_string(&self) -> &'static str {
         match self {
@@ -491,7 +659,7 @@ impl Ace {
             | Ace::SYSTEM_AUDIT_CALLBACK_ACE { header: _, sid, .. }
             | Ace::ACCESS_ALLOWED_CALLBACK_ACE { header: _, sid, .. }
             | Ace::ACCESS_DENIED_CALLBACK_ACE { header: _, sid, .. }
-            | Ace::SYSTEM_SCOPED_POLICY_ID_ACE { header: _, sid }
+            | Ace::SYSTEM_SCOPED_POLICY_ID_ACE { header: _, sid, .. }
             | Ace::SYSTEM_MANDATORY_LABEL_ACE { header: _, sid, .. }
             | Ace::ACCESS_ALLOWED_OBJECT_ACE {
                 header: _,

@@ -48,11 +48,29 @@ pub AceList: Vec<crate::Ace> = {
 }
 
 pub Ace: crate::Ace = {
-    "(A;" <a: AceSid> ")" => crate::Ace::access_allowed(a.0, a.1, a.2)
+    "(A;" <a: AceSid> ")" => crate::Ace::access_allowed(a.0, a.1, a.2),
+    "(D;" <a: AceSid> ")" => crate::Ace::access_denied(a.0, a.1, a.2),
+    "(OA;" <a: AceSidObject> ")" => crate::Ace::access_allowed_object(a.0, a.1, a.2, a.3, a.4),
+    "(OD;" <a: AceSidObject> ")" => crate::Ace::access_denied_object(a.0, a.1, a.2, a.3, a.4),
+    //"(XA;" <a: AceSidAppdata> ")" => crate::Ace::access_allowed_callback(a.0, a.1, a.2, a.3),
+    //"(XD;" <a: AceSidAppdata> ")" => crate::Ace::access_denied_callback(a.0, a.1, a.2, a.3),
+    //"(ZA;" <a: AceSidObjectAppdata> ")" => crate::Ace::access_allowed_object_callback(a.0, a.1, a.2, a.3, a.4, a.5),
+    //"(ZD;" <a: AceSidObjectAppdata> ")" => crate::Ace::access_denied_object_callback(a.0, a.1, a.2, a.3, a.4, a.5),
+    "(AU;" <a: AceSid> ")" => crate::Ace::audit(a.0, a.1, a.2),
+    //"(OU;" <a: AceSidObjectAppdata> ")" => crate::Ace::audit_object(a.0, a.1, a.2, a.3, a.4, a.5),
+    //"(XU;" <a: AceSidAppdata> ")" => crate::Ace::audit_callback(a.0, a.1, a.2, a.3),
+    "(ML;" <a: AceSid> ")" => crate::Ace::mandatory_label(a.0, a.1, a.2),
+    //"(ZU;" <a: AceSidObjectAppdata> ")" => crate::Ace::audit_callback_object(a.0, a.1, a.2, a.3, a.4, a.5),
+    //"(RA;" <a: AceSidObjectAppdata> ")" => crate::Ace::resource_attribute(a.0, a.1, a.2, a.3, a.4, a.5),
+    "(SP;" <a: AceSid> ")" => crate::Ace::scoped_policy_id(a.0, a.1, a.2),
 }
 
 AceSid: (crate::AceFlags, crate::AccessMask, crate::Sid) = {
     <flags:AceFlags> ";" <mask: AccessMask> ";;;" <sid: Sid> => (flags, mask, sid)
+}
+
+AceSidObject: (crate::AceFlags, crate::AccessMask, crate::Guid, crate::Guid, crate::Sid) = {
+    <flags:AceFlags> ";" <mask: AccessMask> ";" <obj:Guid> ";" <inherited:Guid> ";" <sid: Sid> => (flags, mask, obj, inherited, sid)
 }
 
 pub Sid: crate::Sid = {

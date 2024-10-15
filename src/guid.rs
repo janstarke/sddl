@@ -4,6 +4,8 @@ use binrw::{BinRead, BinReaderExt, BinWrite, BinWriterExt};
 
 use uuid::Uuid;
 
+use crate::RawSize;
+
 #[derive(Eq, PartialEq, Copy, Clone)]
 pub struct Guid(Uuid);
 
@@ -51,5 +53,11 @@ impl<'v> TryFrom<&'v str> for Guid {
 
     fn try_from(value: &'v str) -> Result<Self, Self::Error> {
         Ok(Self(Uuid::try_from(value)?))
+    }
+}
+
+impl RawSize for Guid {
+    fn raw_size(&self) -> u16 {
+        std::mem::size_of::<u128>() as u16
     }
 }
