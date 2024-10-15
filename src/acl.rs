@@ -1,11 +1,11 @@
 use std::fmt::Display;
 
-use binrw::binrw;
-use getset::Getters;
 use crate::raw_size::RawSize;
 use crate::sddl_h::*;
 use crate::Ace;
 use crate::ControlFlags;
+use binrw::binrw;
+use getset::Getters;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum AclType {
@@ -70,7 +70,7 @@ pub struct Acl {
 
     #[br(calc=control_flags)]
     #[bw(ignore)]
-    control_flags: ControlFlags
+    control_flags: ControlFlags,
 }
 
 impl Display for Acl {
@@ -118,6 +118,20 @@ impl Acl {
             acl_type,
             control_flags,
         }
+    }
+
+    /// parses an SDDL string
+    /// 
+    /// # Example
+    /// ```rust
+    /// use sddl::{Acl, AclType};
+    /// let acl = Acl::from_sddl("D:P(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)", None).unwrap();
+    /// 
+    /// assert_eq!(*acl.acl_type(), AclType::DACL);
+    /// assert_eq!(*acl.ace_count(), 4);
+    /// ```
+    pub fn from_sddl(value: &str, domain_rid: Option<&[u32]>) -> Result<Self, crate::Error> {
+        Ok(crate::parser::AclParser::new().parse(domain_rid, value)?)
     }
 
     pub fn sddl_string(&self) -> String {
