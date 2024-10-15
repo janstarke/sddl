@@ -8,6 +8,9 @@ pub enum Error {
 
     #[error("IllegalSid: '{0}' (reason: {1})")]
     IllegalSidFormat(String, &'static str),
+
+    #[error("this SID alias cannot be parsed without a domain RID")]
+    MissingDomainInformation,
 }
 
 impl<L, T, E> From<ParseError<L, T, E>> for Error 

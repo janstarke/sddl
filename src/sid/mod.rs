@@ -89,6 +89,17 @@ impl Sid {
         }
     }
 
+    pub fn new_with_domain(rid: u32, domain: &[u32]) -> Self {
+        let mut d = vec![21];
+        d.extend_from_slice(domain);
+        d.push(rid);
+        Self::new(crate::constants::SECURITY_NT_AUTHORITY, &d[..])
+    }
+
+    pub fn new_builtin(rid: u32) -> Self {
+        Self::new(crate::constants::SECURITY_NT_AUTHORITY, &[32, rid])
+    }
+
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         mem::size_of::<u8>()
@@ -101,9 +112,6 @@ impl Sid {
         identifier_authority: &IdentifierAuthority,
         sub_authority: &[u32],
     ) -> Option<&'static str> {
-        const APPLICATION_PACKAGE_AUTHORITY: IdentifierAuthority = IdentifierAuthority::from(15);
-        const MANDATORY_LABEL_AUTHORITY: IdentifierAuthority = IdentifierAuthority::from(16);
-        const AUTHENTICATION_AUTHORITY: IdentifierAuthority = IdentifierAuthority::from(18);
         match *identifier_authority {
             SECURITY_WORLD_SID_AUTHORITY if sub_authority == [0] => Some(SDDL_EVERYONE),
 

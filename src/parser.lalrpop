@@ -1,6 +1,9 @@
 use std::str::FromStr;
+use crate::Error;
+use crate::constants::*;
+use crate::parsing::*;
 
-grammar;
+grammar(domain_rid: Option<&[u32]>);
 // (Type;Flags;ObjectType;InheritedObjectType;SID[;ExtraData])
 /*
 pub Ace: crate::Ace = {
@@ -11,8 +14,77 @@ pub Ace: crate::Ace = {
 }
 */
 
+extern {
+    type Error = Error;
+}
+
 Sid: crate::Sid = {
-    "AA" => crate::Sid::new(crate::constants::SECURITY_NT_AUTHORITY, &[32, 579]),
+    "AA" => crate::Sid::new_builtin(579),
+    "AC" => APPLICATION_PACKAGE_AUTHORITY.new_sid(&[2, 1]),
+    "AN" => SECURITY_NT_AUTHORITY.new_sid(&[7]),
+    "AO" => crate::Sid::new_builtin(548),
+    "AP" =>? domain_rid.new_domain_sid(525),
+    "AS" => AUTHENTICATION_AUTHORITY.new_sid(&[1]),
+    "AU" => SECURITY_NT_AUTHORITY.new_sid(&[11]),
+    "BA" => crate::Sid::new_builtin(544),
+    "BG" => crate::Sid::new_builtin(546),
+    "BO" => crate::Sid::new_builtin(551),
+    "BU" => crate::Sid::new_builtin(545),
+    "CA" =>? domain_rid.new_domain_sid(517),
+    "CD" => crate::Sid::new_builtin(574),
+    "CG" => SECURITY_CREATOR_SID_AUTHORITY.new_sid(&[1]),
+    "CN" =>? domain_rid.new_domain_sid(522),
+    "CO" => SECURITY_CREATOR_SID_AUTHORITY.new_sid(&[0]),
+    "CY" => crate::Sid::new_builtin(569),
+    "DA" =>? domain_rid.new_domain_sid(512),
+    "DC" =>? domain_rid.new_domain_sid(515),
+    "DD" =>? domain_rid.new_domain_sid(516),
+    "DG" =>? domain_rid.new_domain_sid(514),
+    "DU" =>? domain_rid.new_domain_sid(513),
+    "EA" =>? domain_rid.new_domain_sid(519),
+    "ED" => SECURITY_NT_AUTHORITY.new_sid(&[9]),
+    "EK" =>? domain_rid.new_domain_sid(527),
+    "ER" => crate::Sid::new_builtin(573),
+    "ES" => crate::Sid::new_builtin(576),
+    "HA" => crate::Sid::new_builtin(578),
+    "HI" => MANDATORY_LABEL_AUTHORITY.new_sid(&[12288]),
+    "IS" => crate::Sid::new_builtin(568),
+    "IU" => SECURITY_NT_AUTHORITY.new_sid(&[4]),
+    "KA" =>? domain_rid.new_domain_sid(526),
+    "LA" =>? domain_rid.new_domain_sid(500),
+    "LG" =>? domain_rid.new_domain_sid(501),
+    "LS" => SECURITY_NT_AUTHORITY.new_sid(&[19]),
+    "LU" => crate::Sid::new_builtin(559),
+    "LW" => MANDATORY_LABEL_AUTHORITY.new_sid(&[4096]),
+    "ME" => MANDATORY_LABEL_AUTHORITY.new_sid(&[8192]),
+    "MP" => MANDATORY_LABEL_AUTHORITY.new_sid(&[8448]),
+    "MS" => crate::Sid::new_builtin(577),
+    "MU" => crate::Sid::new_builtin(558),
+    "NO" => crate::Sid::new_builtin(556),
+    "NS" => SECURITY_NT_AUTHORITY.new_sid(&[20]),
+    "NU" => SECURITY_NT_AUTHORITY.new_sid(&[2]),
+    "OW" => SECURITY_CREATOR_SID_AUTHORITY.new_sid(&[4]),
+    "PA" =>? domain_rid.new_domain_sid(520),
+    "PO" => crate::Sid::new_builtin(550),
+    "PS" => SECURITY_NT_AUTHORITY.new_sid(&[10]),
+    "PU" => crate::Sid::new_builtin(547),
+    "RA" => crate::Sid::new_builtin(575),
+    "RC" => SECURITY_NT_AUTHORITY.new_sid(&[12]),
+    "RD" => crate::Sid::new_builtin(555),
+    "RE" => crate::Sid::new_builtin(552),
+    "RM" => crate::Sid::new_builtin(580),
+    "RO" =>? domain_rid.new_domain_sid(498),
+    "RS" =>? domain_rid.new_domain_sid(553),
+    "RU" => crate::Sid::new_builtin(554),
+    "SA" =>? domain_rid.new_domain_sid(518),
+    "SI" => MANDATORY_LABEL_AUTHORITY.new_sid(&[16384]),
+    "SO" => crate::Sid::new_builtin(549),
+    "SS" => AUTHENTICATION_AUTHORITY.new_sid(&[32, 579]),
+    "SU" => SECURITY_NT_AUTHORITY.new_sid(&[6]),
+    "SY" => SECURITY_NT_AUTHORITY.new_sid(&[18]),
+    "UD" => SECURITY_NT_AUTHORITY.new_sid(&[84, 0, 0, 0, 0, 0]),
+    "WD" => SECURITY_WORLD_SID_AUTHORITY.new_sid(&[32, 579]),
+    "WR" => SECURITY_NT_AUTHORITY.new_sid(&[33]),
     <s:r#"S-1-\d+(-\d+)*"#> => crate::Sid::try_from(s).unwrap()
 }
 

@@ -51,6 +51,7 @@ mod guid;
 mod offset;
 mod sddl_h;
 mod error;
+pub (crate) mod parsing;
 
 
 pub use control_flags::*;

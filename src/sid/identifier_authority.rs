@@ -3,9 +3,11 @@ use std::fmt::Display;
 use binrw::binrw;
 use getset::Getters;
 
+use super::Sid;
+
 /// <https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-sid_identifier_authority>
 #[binrw]
-#[derive(Eq, PartialEq, Getters)]
+#[derive(Eq, PartialEq, Getters, Clone, Copy)]
 #[getset(get = "pub")]
 pub struct IdentifierAuthority {
     value: [u8; 6],
@@ -47,6 +49,9 @@ pub mod constants {
     predefined_authority!(SECURITY_INTERNET_SITE_AUTHORITY, 7);
     predefined_authority!(SECURITY_EXCHANGE_AUTHORITY, 8);
     predefined_authority!(SECURITY_RESOURCE_MANAGER_AUTHORITY, 9);
+    predefined_authority!(APPLICATION_PACKAGE_AUTHORITY, 15);
+    predefined_authority!(MANDATORY_LABEL_AUTHORITY, 16);
+    predefined_authority!(AUTHENTICATION_AUTHORITY, 18);
 }
 
 impl IdentifierAuthority {
@@ -59,6 +64,10 @@ impl IdentifierAuthority {
             value: [0, 0, 0, 0, 0, value],
         }
     }
+
+    pub fn new_sid(&self, rid: &[u32]) -> Sid {
+        Sid::new(*self, rid)
+    } 
 }
 
 impl From<[u8; 6]> for IdentifierAuthority {

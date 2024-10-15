@@ -306,7 +306,7 @@ impl<'input> TryFrom<&'input str> for AccessMask {
     type Error = crate::Error;
 
     fn try_from(value: &'input str) -> Result<Self, Self::Error> {
-        Ok(crate::parser::AccessMaskParser::new().parse(value)?)
+        Ok(crate::parser::AccessMaskParser::new().parse(None, value)?)
     }
 }
 
