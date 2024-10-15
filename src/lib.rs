@@ -8,7 +8,7 @@
 //! ```rust
 //! use std::io::Cursor;
 //! use binrw::BinReaderExt;
-//! use sddl::{ControlFlags, SecurityDescriptor};
+//! use sddl::{ControlFlags, SecurityDescriptor, Acl};
 //! 
 //! let mut binary_data = Cursor::new([0x01, 0x00, 0x14, 0xb0, 0x90, 0x00, 0x00,
 //!     0x00, 0xa0, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00,
@@ -34,8 +34,8 @@
 //!     ControlFlags::SystemAclProtected |
 //!     ControlFlags::SelfRelative);
 //! 
-//! assert_eq!(security_descriptor.sacl_as_sddl_string().unwrap(), "S:P(AU;FA;GR;;;WD)".to_string());
-//! //assert_eq!(security_descriptor.dacl_as_sddl_string().unwrap(), "D:P(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)".to_string());
+//! assert_eq!(security_descriptor.sacl().unwrap(), &Acl::from_sddl("S:P(AU;FA;GR;;;WD)", None).unwrap());
+//! assert_eq!(security_descriptor.dacl().unwrap(), &Acl::from_sddl("D:P(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)", None).unwrap());
 //! ``` 
 
 lalrpop_mod!(pub parser);

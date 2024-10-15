@@ -8,7 +8,7 @@ use crate::{sddl_h::*, AccessMask};
 pub const ACE_HEADER_SIZE: u16 = 8;
 
 #[binrw]
-#[derive(Eq, PartialEq, Getters, Clone, Copy)]
+#[derive(Eq, PartialEq, Getters, Clone, Copy, Debug)]
 #[getset(get = "pub")]
 pub struct AceHeader {
     /// An unsigned 8-bit integer that specifies a set of ACE type-specific

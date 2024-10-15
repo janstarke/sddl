@@ -30,7 +30,7 @@ pub const ACL_HEADER_SIZE: u16 = 1 + 1 + 2 + 2 + 2;
 ///
 /// <https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-acl>
 #[binrw]
-#[derive(Eq, PartialEq, Getters)]
+#[derive(Eq, PartialEq, Getters, Debug)]
 #[getset(get = "pub")]
 #[brw(little,import(control_flags: ControlFlags, acl_type: AclType))]
 pub struct Acl {
@@ -84,7 +84,7 @@ impl Display for Acl {
 }
 
 #[binrw]
-#[derive(Eq, PartialEq, Clone, Copy, Default)]
+#[derive(Eq, PartialEq, Clone, Copy, Default, Debug)]
 #[allow(non_camel_case_types)]
 #[brw(repr=u8)]
 pub enum AclRevision {
