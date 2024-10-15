@@ -4,6 +4,11 @@ use crate::constants::*;
 use crate::parsing::*;
 
 grammar(domain_rid: Option<&[u32]>);
+
+extern {
+    type Error = Error;
+}
+
 // (Type;Flags;Access;ObjectType;InheritedObjectType;SID[;ExtraData])
 
 // there is no way to parse SACL and DACL flags separately. So, we set both,
@@ -46,13 +51,8 @@ pub Ace: crate::Ace = {
     "(A;" <a: AceSid> ")" => crate::Ace::access_allowed(a.0, a.1, a.2)
 }
 
-
-extern {
-    type Error = Error;
-}
-
 AceSid: (crate::AceFlags, crate::AccessMask, crate::Sid) = {
-    <flags:AceFlags> ";" <mask: AccessMask> ";;" <sid: Sid> => (flags, mask, sid)
+    <flags:AceFlags> ";" <mask: AccessMask> ";;;" <sid: Sid> => (flags, mask, sid)
 }
 
 pub Sid: crate::Sid = {
