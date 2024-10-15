@@ -5,6 +5,7 @@ use crate::sddl_h::*;
 use crate::Ace;
 use crate::ControlFlags;
 use binrw::binrw;
+use derivative::Derivative;
 use getset::Getters;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
@@ -30,7 +31,8 @@ pub const ACL_HEADER_SIZE: u16 = 1 + 1 + 2 + 2 + 2;
 ///
 /// <https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-acl>
 #[binrw]
-#[derive(Eq, PartialEq, Getters, Debug)]
+#[derive(Derivative, Getters, Debug)]
+#[derivative(Eq, PartialEq)]
 #[getset(get = "pub")]
 #[brw(little,import(control_flags: ControlFlags, acl_type: AclType))]
 pub struct Acl {
@@ -70,6 +72,13 @@ pub struct Acl {
 
     #[br(calc=control_flags)]
     #[bw(ignore)]
+
+    // this flag field might contain information about the whole security
+    // descriptor, which might differ from the SD where the other
+    // ACL came from. So, ACLs which are equal can be part of SDs with
+    // different control flags. This is the reason we ignore this pseudo-field
+    // here
+    #[derivative(PartialEq="ignore")]
     control_flags: ControlFlags,
 }
 

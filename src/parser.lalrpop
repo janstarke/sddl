@@ -17,13 +17,13 @@ pub Acl: crate::Acl = {
     "D:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
         crate::AclRevision::ACL_REVISION,
         crate::AclType::DACL,
-        flags - (crate::ControlFlags::SystemAclProtected | crate::ControlFlags::SystemAclAutoInheritRequired | crate::ControlFlags::SystemAclAutoInherited),
+        flags & !(crate::ControlFlags::SystemAclProtected | crate::ControlFlags::SystemAclAutoInheritRequired | crate::ControlFlags::SystemAclAutoInherited),
         ace_list
     ),
     "S:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
         crate::AclRevision::ACL_REVISION,
         crate::AclType::SACL,
-        flags - (crate::ControlFlags::DiscretionaryAclProtected | crate::ControlFlags::DiscretionaryAclAutoInheritRequired | crate::ControlFlags::DiscretionaryAclAutoInherited),
+        flags & !(crate::ControlFlags::DiscretionaryAclProtected | crate::ControlFlags::DiscretionaryAclAutoInheritRequired | crate::ControlFlags::DiscretionaryAclAutoInherited),
         ace_list
     )
 }

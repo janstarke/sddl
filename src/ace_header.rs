@@ -26,7 +26,7 @@ pub struct AceHeader {
 
     mask: AccessMask,
 
-    #[br(calc=4-(ace_size%4))]
+    #[br(calc=std::cmp::min(0, 4-(ace_size%4)))]
     #[bw(ignore)]
     expected_padding: u16,
 }

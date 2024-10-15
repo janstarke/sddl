@@ -34,8 +34,10 @@
 //!     ControlFlags::SystemAclProtected |
 //!     ControlFlags::SelfRelative);
 //! 
-//! assert_eq!(security_descriptor.sacl().unwrap(), &Acl::from_sddl("S:P(AU;FA;GR;;;WD)", None).unwrap());
-//! assert_eq!(security_descriptor.dacl().unwrap(), &Acl::from_sddl("D:P(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)", None).unwrap());
+//! assert_eq!(security_descriptor.sacl().unwrap(),
+//!             &Acl::from_sddl("S:P(AU;FA;GR;;;WD)", None).unwrap());
+//! assert_eq!(security_descriptor.dacl().unwrap(),
+//!             &Acl::from_sddl("D:P(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)", None).unwrap());
 //! ``` 
 
 lalrpop_mod!(pub parser);
