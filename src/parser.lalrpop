@@ -6,17 +6,19 @@ use crate::parsing::*;
 grammar(domain_rid: Option<&[u32]>);
 // (Type;Flags;Access;ObjectType;InheritedObjectType;SID[;ExtraData])
 
+// there is no way to parse SACL and DACL flags separately. So, we set both,
+// the DACL and SACL flags, and delete the unwanted flags afterwards
 pub Acl: crate::Acl = {
     "D:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
         crate::AclRevision::ACL_REVISION,
         crate::AclType::DACL,
-        flags,
+        flags - (crate::ControlFlags::SystemAclProtected | crate::ControlFlags::SystemAclAutoInheritRequired | crate::ControlFlags::SystemAclAutoInherited),
         ace_list
     ),
     "S:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
         crate::AclRevision::ACL_REVISION,
         crate::AclType::SACL,
-        flags,
+        flags - (crate::ControlFlags::DiscretionaryAclProtected | crate::ControlFlags::DiscretionaryAclAutoInheritRequired | crate::ControlFlags::DiscretionaryAclAutoInherited),
         ace_list
     )
 }
@@ -26,6 +28,9 @@ pub AclFlags: crate::ControlFlags = {
 }
 
 SingleAclFlag: crate::ControlFlags = {
+    "P" => crate::ControlFlags::SystemAclProtected | crate::ControlFlags::DiscretionaryAclProtected,
+    "AR" => crate::ControlFlags::SystemAclAutoInheritRequired | crate::ControlFlags::DiscretionaryAclAutoInheritRequired,
+    "AI" => crate::ControlFlags::SystemAclAutoInherited | crate::ControlFlags::DiscretionaryAclAutoInherited,
 }
 
 pub AceList: Vec<crate::Ace> = {
