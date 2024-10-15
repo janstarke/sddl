@@ -209,7 +209,7 @@ impl Sid {
                 548 => Some(SDDL_ACCOUNT_OPERATORS),
                 544 => Some(SDDL_BUILTIN_ADMINISTRATORS),
                 546 => Some(SDDL_BUILTIN_GUESTS),
-                551 => Some(SDDL_BUILTIN_GUESTS),
+                551 => Some(SDDL_BACKUP_OPERATORS),
                 545 => Some(SDDL_BUILTIN_USERS),
                 574 => Some(SDDL_CERTSVC_DCOM_ACCESS),
                 569 => Some(SDDL_CRYPTO_OPERATORS),
@@ -217,7 +217,7 @@ impl Sid {
                 576 => Some(SDDL_RDS_ENDPOINT_SERVERS),
                 578 => Some(SDDL_HYPER_V_ADMINS),
                 568 => Some(SDDL_IIS_USERS),
-                559 => Some(SDDL_PERFMON_USERS),
+                559 => Some(SDDL_PERFLOG_USERS),
                 577 => Some(SDDL_RDS_MANAGEMENT_SERVERS),
                 558 => Some(SDDL_PERFMON_USERS),
                 556 => Some(SDDL_NETWORK_CONFIGURATION_OPS),
@@ -314,6 +314,7 @@ impl TryFrom<&str> for Sid {
 #[cfg(test)]
 mod tests {
     use crate::Sid;
+    use crate::parser::SidParser;
 
     #[test]
     fn test_null_sid() {
@@ -331,5 +332,21 @@ mod tests {
     fn test_domain_sid() {
         let my_sid = "S-1-5-21-2623811015-3361044348-030300820-1013";
         assert_eq!(my_sid, Sid::try_from(my_sid).unwrap().to_string());
+    }
+
+    #[test]
+    fn test_all_aliases() {
+        let aliases = ["AA", "AC", "AN", "AO", "AP", "AS", "AU",
+            "BA","BG","BO","BU","CA","CD","CG","CN","CO","CY","DA","DC","DD",
+            "DG","DU","EA","ED","EK","ER","ES","HA","HI","IS","IU","KA","LA",
+            "LG","LS","LU","LW","ME","MP","MS","MU","NO","NS","NU","OW","PA",
+            "PO","PS","PU","RA","RC","RD","RE","RM","RO","RS","RU","SA","SI",
+            "SO","SS","SU","SY","UD","WD","WR"];
+        let domain=[2623811015, 3361044348, 30300820];
+        let parser = SidParser::new();
+        for alias in aliases {
+            let sid = parser.parse(Some(&domain), alias).unwrap();
+            assert_eq!(sid.alias().unwrap_or_else(|| panic!("missing alias for '{alias}'")), alias);
+        }
     }
 }
