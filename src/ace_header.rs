@@ -5,6 +5,8 @@ use strum::Display;
 
 use crate::{sddl_h::*, AccessMask};
 
+pub const ACE_HEADER_SIZE: u16 = 8;
+
 #[binrw]
 #[derive(Eq, PartialEq, Getters, Clone, Copy)]
 #[getset(get = "pub")]
@@ -23,6 +25,26 @@ pub struct AceHeader {
     ace_size: u16,
 
     mask: AccessMask,
+
+    #[br(calc=4-(ace_size%4))]
+    #[bw(ignore)]
+    expected_padding: u16,
+}
+
+impl AceHeader {
+    pub fn new(ace_flags: AceFlags, ace_size_without_header: u16, mask: AccessMask) -> Self {
+        // make sure the size is a multiple of 4
+
+        let expected_padding = std::cmp::min(0, 4 - (ace_size_without_header % 4));
+        
+        let ace_size = ACE_HEADER_SIZE + ace_size_without_header + expected_padding;
+        Self {
+            ace_flags,
+            ace_size,
+            mask,
+            expected_padding
+        }
+    }
 }
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>

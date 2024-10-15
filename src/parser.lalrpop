@@ -4,18 +4,50 @@ use crate::constants::*;
 use crate::parsing::*;
 
 grammar(domain_rid: Option<&[u32]>);
-// (Type;Flags;ObjectType;InheritedObjectType;SID[;ExtraData])
-/*
-pub Ace: crate::Ace = {
-    "(" <t:AceType> ";" AceCon ")" => {
-        if t == SDDL_ACCESS_ALLOWED {}
-        els if 
+// (Type;Flags;Access;ObjectType;InheritedObjectType;SID[;ExtraData])
+
+pub Acl: crate::Acl = {
+    "D:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
+        crate::AclRevision::ACL_REVISION,
+        crate::AclType::DACL,
+        flags,
+        ace_list
+    ),
+    "S:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
+        crate::AclRevision::ACL_REVISION,
+        crate::AclType::SACL,
+        flags,
+        ace_list
+    )
+}
+pub AclFlags: crate::ControlFlags = {
+    <s:SingleAclFlag> => s,
+    <a:AclFlags> <s:SingleAclFlag> => a | s
+}
+
+SingleAclFlag: crate::ControlFlags = {
+}
+
+pub AceList: Vec<crate::Ace> = {
+    <ace:Ace> => vec![ace],
+    <l:AceList> <ace:Ace> => {
+        let mut l = l;
+        l.push(ace);
+        l
     }
 }
-*/
+
+pub Ace: crate::Ace = {
+    "(A;" <a: AceSid> ")" => crate::Ace::access_allowed(a.0, a.1, a.2)
+}
+
 
 extern {
     type Error = Error;
+}
+
+AceSid: (crate::AceFlags, crate::AccessMask, crate::Sid) = {
+    <flags:AceFlags> ";" <mask: AccessMask> ";;" <sid: Sid> => (flags, mask, sid)
 }
 
 pub Sid: crate::Sid = {
@@ -112,9 +144,9 @@ AceType: &'static str = {
     "FL" => crate::sddl_h::SDDL_ACCESS_FILTER,
 }
 
-pub AceFlag: crate::AceFlags = {
+pub AceFlags: crate::AceFlags = {
     <s:SingleAceFlag> => s,
-    <a:AceFlag> <s:SingleAceFlag> => a | s
+    <a:AceFlags> <s:SingleAceFlag> => a | s
 }
 
 SingleAceFlag: crate::AceFlags = {

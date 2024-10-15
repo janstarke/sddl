@@ -11,7 +11,7 @@ pub use identifier_authority::constants::*;
 pub use identifier_authority::*;
 use lazy_regex::regex_captures;
 
-use crate::sddl_h::*;
+use crate::{sddl_h::*, RawSize};
 
 #[allow(unused)]
 enum SidNameUse {
@@ -74,6 +74,12 @@ impl Display for Sid {
         let sub_authorities = sub_authorities.join("-");
 
         write!(f, "S-{revision}-{identifier_authority}-{sub_authorities}")
+    }
+}
+
+impl RawSize for Sid {
+    fn raw_size(&self) -> u16 {
+        self.len().try_into().unwrap()
     }
 }
 

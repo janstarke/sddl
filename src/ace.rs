@@ -1,7 +1,7 @@
 use binrw::binrw;
 use std::{fmt::Display, mem};
 
-use crate::{sddl_h::*, AceHeader, Guid, Sid};
+use crate::{sddl_h::*, AccessMask, AceFlags, AceHeader, Guid, RawSize, Sid};
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
 #[binrw]
@@ -19,6 +19,9 @@ pub enum Ace {
         /// The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
+
+        #[br(count = usize::try_from(*header.expected_padding()).unwrap())]
+        _padding: Vec<u8>,
     },
 
     /// The ACCESS_ALLOWED_OBJECT_ACE structure defines an ACE that controls
@@ -418,7 +421,29 @@ impl Display for Ace {
     }
 }
 
+impl RawSize for Ace {
+    fn raw_size(&self) -> u16 {
+        *self.header().ace_size()
+    }
+}
+
+macro_rules! ctor {
+    ($ctor_name: ident, $ty: ident) => {
+        pub fn $ctor_name(flags: AceFlags, mask: AccessMask, sid: Sid) -> Self {
+            let header = AceHeader::new(flags, sid.raw_size(), mask);
+            let _padding = vec![0u8; *header.expected_padding() as usize];
+            Self::$ty {
+                header,
+                sid,
+                _padding,
+            }
+        }
+    };
+}
+
 impl Ace {
+    ctor!(access_allowed, ACCESS_ALLOWED_ACE);
+
     fn type_string(&self) -> &'static str {
         match self {
             Ace::ACCESS_ALLOWED_ACE { .. } => SDDL_ACCESS_ALLOWED,
@@ -460,9 +485,9 @@ impl Ace {
 
     fn sid(&self) -> &Sid {
         match self {
-            Ace::ACCESS_ALLOWED_ACE { header: _, sid }
-            | Ace::ACCESS_DENIED_ACE { header: _, sid }
-            | Ace::SYSTEM_AUDIT_ACE { header: _, sid }
+            Ace::ACCESS_ALLOWED_ACE { header: _, sid, .. }
+            | Ace::ACCESS_DENIED_ACE { header: _, sid, .. }
+            | Ace::SYSTEM_AUDIT_ACE { header: _, sid, .. }
             | Ace::SYSTEM_AUDIT_CALLBACK_ACE { header: _, sid, .. }
             | Ace::ACCESS_ALLOWED_CALLBACK_ACE { header: _, sid, .. }
             | Ace::ACCESS_DENIED_CALLBACK_ACE { header: _, sid, .. }

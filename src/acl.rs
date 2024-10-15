@@ -2,21 +2,38 @@ use std::fmt::Display;
 
 use binrw::binrw;
 use getset::Getters;
-
-use crate::Ace;
+use crate::raw_size::RawSize;
 use crate::sddl_h::*;
+use crate::Ace;
+use crate::ControlFlags;
+
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+pub enum AclType {
+    SACL,
+    DACL,
+}
+
+impl AclType {
+    pub fn sddl_string(&self) -> &'static str {
+        match self {
+            AclType::SACL => "S",
+            AclType::DACL => "D",
+        }
+    }
+}
+
+pub const ACL_HEADER_SIZE: u16 = 1 + 1 + 2 + 2 + 2;
 
 /// The ACL structure is the header of an access control list (ACL). A complete
 /// ACL consists of an ACL structure followed by an ordered list of zero or more
 /// access control entries (ACEs).
-/// 
+///
 /// <https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-acl>
 #[binrw]
 #[derive(Eq, PartialEq, Getters)]
-#[getset(get="pub")]
-#[brw(little)]
+#[getset(get = "pub")]
+#[brw(little,import(control_flags: ControlFlags, acl_type: AclType))]
 pub struct Acl {
-
     /// Specifies the revision level of the ACL. This value should be
     /// ACL_REVISION, unless the ACL contains an object-specific ACE, in which
     /// case this value must be ACL_REVISION_DS. All ACEs in an ACL must be at
@@ -46,6 +63,14 @@ pub struct Acl {
 
     #[br(count=ace_count)]
     ace_list: Vec<Ace>,
+
+    #[br(calc=acl_type)]
+    #[bw(ignore)]
+    acl_type: AclType,
+
+    #[br(calc=control_flags)]
+    #[bw(ignore)]
+    control_flags: ControlFlags
 }
 
 impl Display for Acl {
@@ -76,13 +101,38 @@ pub enum AclRevision {
     ACL_REVISION_DS = 0x04,
 }
 
-impl TryFrom<&str> for Acl {
-    type Error = crate::Error;
+impl Acl {
+    pub fn new(
+        acl_revision: AclRevision,
+        acl_type: AclType,
+        control_flags: ControlFlags,
+        ace_list: Vec<Ace>,
+    ) -> Self {
+        let acl_size = ACL_HEADER_SIZE + ace_list.iter().map(|ace| ace.raw_size()).sum::<u16>();
+        let ace_count = ace_list.len().try_into().unwrap();
+        Self {
+            acl_revision,
+            acl_size,
+            ace_count,
+            ace_list,
+            acl_type,
+            control_flags,
+        }
+    }
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        todo!()
+    pub fn sddl_string(&self) -> String {
+        let ace_list = self
+            .ace_list()
+            .iter()
+            .map(|ace: &Ace| format!("{SDDL_ACE_BEGIN}{ace}{SDDL_ACE_END}"))
+            .fold(String::new(), |a, b| a + &b);
+
+        let acl_type = self.acl_type().sddl_string();
+        let flags = self.control_flags().sddl_string(*self.acl_type());
+        format!("{acl_type}{SDDL_DELIMINATOR}{flags}{ace_list}")
     }
 }
+
 /*
 #[cfg(test)]
 mod tests {

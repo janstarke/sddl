@@ -4,6 +4,12 @@ use binrw::BinWrite;
 use binrw::BinWriterExt;
 use bitflags::bitflags;
 
+use crate::sddl_h::SDDL_AUTO_INHERITED;
+use crate::sddl_h::SDDL_AUTO_INHERIT_REQ;
+use crate::sddl_h::SDDL_NULL_ACL;
+use crate::sddl_h::SDDL_PROTECTED;
+use crate::AclType;
+
 bitflags! {
     /// <https://github.com/microsoft/referencesource/blob/master/mscorlib/system/security/accesscontrol/securitydescriptor.cs>
     #[derive(Eq, PartialEq, Debug, Copy, Clone)]
@@ -52,5 +58,37 @@ impl BinWrite for ControlFlags {
     ) -> binrw::BinResult<()> {
         let raw_value = self.bits();
         writer.write_le_args(&raw_value, args)
+    }
+}
+
+impl ControlFlags {
+    pub fn sddl_string(&self, acl_type: AclType) -> String {
+        if *self == Self::None {
+            SDDL_NULL_ACL.into()
+        } else {
+            let mut sddl = String::with_capacity(32);
+            let mut flag = |flag: ControlFlags, s: &str| {
+                if self.contains(flag) {
+                    sddl.push_str(s);
+                }
+            };
+
+            match acl_type {
+                AclType::SACL => {
+                    flag(Self::SystemAclProtected, SDDL_PROTECTED);
+                    flag(Self::SystemAclAutoInheritRequired, SDDL_AUTO_INHERIT_REQ);
+                    flag(Self::SystemAclAutoInherited, SDDL_AUTO_INHERITED);
+                }
+                AclType::DACL => {
+                    flag(Self::DiscretionaryAclProtected, SDDL_PROTECTED);
+                    flag(
+                        Self::DiscretionaryAclAutoInheritRequired,
+                        SDDL_AUTO_INHERIT_REQ,
+                    );
+                    flag(Self::DiscretionaryAclAutoInherited, SDDL_AUTO_INHERITED);
+                }
+            }
+            sddl
+        }
     }
 }

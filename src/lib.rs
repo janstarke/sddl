@@ -51,6 +51,7 @@ mod guid;
 mod offset;
 mod sddl_h;
 mod error;
+mod raw_size;
 pub (crate) mod parsing;
 
 
@@ -64,6 +65,7 @@ pub use ace_header::*;
 pub use access_mask::AccessMask;
 pub use guid::*;
 pub use error::*;
+pub use raw_size::*;
 pub(crate) use offset::*;
 
 pub mod constants {

@@ -3,7 +3,7 @@ use std::fmt::Display;
 use binrw::{binread, FilePtr};
 use getset::Getters;
 
-use crate::{sddl_h::*, Acl, ControlFlags, Offset, Sid};
+use crate::{sddl_h::*, Acl, AclType, ControlFlags, Offset, Sid};
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/2918391b-75b9-4eeb-83f0-7fdc04a5c6c9>
 #[binread]
@@ -36,13 +36,15 @@ pub struct SecurityDescriptor {
 
     #[br(little,
         offset=sd_offset.0,
-        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::SystemAclPresent) {Some(d)} else { None }))
+        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::SystemAclPresent) {Some(d)} else { None }),
+        args{inner: (flags, AclType::SACL)})
         ]
     sacl_ref: Option<FilePtr<u32, Acl>>,
 
     #[br(little,
         offset=sd_offset.0,
-        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::DiscretionaryAclPresent) {Some(d)} else { None }))
+        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::DiscretionaryAclPresent) {Some(d)} else { None }),
+        args{inner: (flags, AclType::DACL)})
         ]
     dacl_ref: Option<FilePtr<u32, Acl>>,
 }
