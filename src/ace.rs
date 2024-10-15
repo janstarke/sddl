@@ -20,7 +20,7 @@ pub enum Ace {
         #[brw(assert(sid.len() % 4 == 0))]
         sid: Sid,
 
-        #[br(count = usize::try_from(*header.expected_padding()).unwrap())]
+        #[br(count = usize::from(*header.expected_padding()))]
         _padding: Vec<u8>,
     },
 
