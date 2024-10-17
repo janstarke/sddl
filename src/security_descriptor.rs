@@ -20,7 +20,6 @@ pub struct SecurityDescriptor {
     #[br(temp)]
     _reserved1: u8,
 
-    #[br(dbg)]
     flags: ControlFlags,
 
     #[br(little,
