@@ -20,6 +20,7 @@ pub struct SecurityDescriptor {
     #[br(temp)]
     _reserved1: u8,
 
+    #[br(dbg)]
     flags: ControlFlags,
 
     #[br(little,
@@ -36,17 +37,23 @@ pub struct SecurityDescriptor {
 
     #[br(little,
         offset=sd_offset.0,
-        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::SystemAclPresent) {Some(d)} else { None }),
+        if(flags.contains(ControlFlags::SystemAclPresent)),
         args{inner: (flags, AclType::SACL)})
         ]
     sacl_ref: Option<FilePtr<u32, Acl>>,
 
+    #[br(temp, if(! flags.contains(ControlFlags::SystemAclPresent), 0))]
+    _sacl_ref: u32,
+
     #[br(little,
         offset=sd_offset.0,
-        map(|d: FilePtr<u32, Acl>| if flags.contains(ControlFlags::DiscretionaryAclPresent) {Some(d)} else { None }),
+        if(flags.contains(ControlFlags::DiscretionaryAclPresent)),
         args{inner: (flags, AclType::DACL)})
         ]
     dacl_ref: Option<FilePtr<u32, Acl>>,
+
+    #[br(temp, if(! flags.contains(ControlFlags::DiscretionaryAclPresent), 0))]
+    _dacl_ref: u32,
 }
 
 impl SecurityDescriptor {
