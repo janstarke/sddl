@@ -170,7 +170,6 @@ pub enum Ace {
         /// rights specified in the Mask field. This field is valid only if the
         /// ACE _OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise,
         /// the ObjectType field is ignored.
-        #[br(dbg)]
         object_type: Guid,
 
         /// A GUID that identifies the type of child object that can inherit the
@@ -183,7 +182,6 @@ pub enum Ace {
 
         ///  The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
-        #[br(dbg)]
         sid: Sid,
 
         /// Optional application data. The size of the application data is
