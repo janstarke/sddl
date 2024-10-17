@@ -11,6 +11,9 @@ pub enum Error {
 
     #[error("this SID alias cannot be parsed without a domain RID")]
     MissingDomainInformation,
+
+    #[error("Error while parsing the binary security descriptor: {0}")]
+    BinReadError(#[from] binrw::Error)
 }
 
 impl<L, T, E> From<ParseError<L, T, E>> for Error 
