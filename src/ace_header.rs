@@ -13,6 +13,7 @@ pub const ACE_HEADER_SIZE: u16 = 8;
 pub struct AceHeader {
     /// An unsigned 8-bit integer that specifies a set of ACE type-specific
     /// control flags.
+    #[br(dbg)]
     ace_flags: AceHeaderFlags,
 
     /// An unsigned 16-bit integer that specifies the size, in bytes, of the
