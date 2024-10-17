@@ -37,6 +37,8 @@ pub const MAX_SUB_AUTHORITIES: u8 = 15;
 #[derive(Eq, PartialEq, Getters)]
 #[getset(get = "pub")]
 pub struct Sid {
+    #[br(assert(revision == 1))]
+    #[bw(assert(*revision == 1))]
     revision: u8,
 
     #[br(assert(sub_authority_count <= MAX_SUB_AUTHORITIES))]

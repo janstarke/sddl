@@ -50,8 +50,8 @@ pub AceList: Vec<crate::Ace> = {
 pub Ace: crate::Ace = {
     "(A;" <a: AceSid> ")" => crate::Ace::access_allowed(a.0, a.1, a.2),
     "(D;" <a: AceSid> ")" => crate::Ace::access_denied(a.0, a.1, a.2),
-    "(OA;" <a: AceSidObject> ")" => crate::Ace::access_allowed_object(a.0, a.1, a.2, a.3, a.4),
-    "(OD;" <a: AceSidObject> ")" => crate::Ace::access_denied_object(a.0, a.1, a.2, a.3, a.4),
+    "(OA;" <a: AceSidObject> ")" => crate::Ace::access_allowed_object(a.0, a.1, Some(a.2), Some(a.3), a.4),
+    "(OD;" <a: AceSidObject> ")" => crate::Ace::access_denied_object(a.0, a.1, Some(a.2), Some(a.3), a.4),
     //"(XA;" <a: AceSidAppdata> ")" => crate::Ace::access_allowed_callback(a.0, a.1, a.2, a.3),
     //"(XD;" <a: AceSidAppdata> ")" => crate::Ace::access_denied_callback(a.0, a.1, a.2, a.3),
     //"(ZA;" <a: AceSidObjectAppdata> ")" => crate::Ace::access_allowed_object_callback(a.0, a.1, a.2, a.3, a.4, a.5),
@@ -65,12 +65,12 @@ pub Ace: crate::Ace = {
     "(SP;" <a: AceSid> ")" => crate::Ace::scoped_policy_id(a.0, a.1, a.2),
 }
 
-AceSid: (crate::AceFlags, crate::AccessMask, crate::Sid) = {
-    <flags:AceFlags> ";" <mask: AccessMask> ";;;" <sid: Sid> => (flags, mask, sid)
+AceSid: (crate::AceHeaderFlags, crate::AccessMask, crate::Sid) = {
+    <flags:AceHeaderFlags> ";" <mask: AccessMask> ";;;" <sid: Sid> => (flags, mask, sid)
 }
 
-AceSidObject: (crate::AceFlags, crate::AccessMask, crate::Guid, crate::Guid, crate::Sid) = {
-    <flags:AceFlags> ";" <mask: AccessMask> ";" <obj:Guid> ";" <inherited:Guid> ";" <sid: Sid> => (flags, mask, obj, inherited, sid)
+AceSidObject: (crate::AceHeaderFlags, crate::AccessMask, crate::Guid, crate::Guid, crate::Sid) = {
+    <flags:AceHeaderFlags> ";" <mask: AccessMask> ";" <obj:Guid> ";" <inherited:Guid> ";" <sid: Sid> => (flags, mask, obj, inherited, sid)
 }
 
 pub Sid: crate::Sid = {
@@ -167,21 +167,21 @@ AceType: &'static str = {
     "FL" => crate::sddl_h::SDDL_ACCESS_FILTER,
 }
 
-pub AceFlags: crate::AceFlags = {
+pub AceHeaderFlags: crate::AceHeaderFlags = {
     <s:SingleAceFlag> => s,
-    <a:AceFlags> <s:SingleAceFlag> => a | s
+    <a:AceHeaderFlags> <s:SingleAceFlag> => a | s
 }
 
-SingleAceFlag: crate::AceFlags = {
-    "OI" => crate::AceFlags::OBJECT_INHERIT_ACE,
-    "CI" => crate::AceFlags::CONTAINER_INHERIT_ACE,
-    "NP" => crate::AceFlags::NO_PROPAGATE_INHERIT_ACE,
-    "IO" => crate::AceFlags::INHERIT_ONLY_ACE,
-    "ID" => crate::AceFlags::INHERITED_ACE,
-    "CR" => crate::AceFlags::CRITICAL,
-    "SA" => crate::AceFlags::SUCCESSFUL_ACCESS_ACE_FLAG,
-    "FA" => crate::AceFlags::FAILED_ACCESS_ACE_FLAG,
-    "TP" => crate::AceFlags::TRUST_PROTECTED_FILTER,
+SingleAceFlag: crate::AceHeaderFlags = {
+    "OI" => crate::AceHeaderFlags::OBJECT_INHERIT_ACE,
+    "CI" => crate::AceHeaderFlags::CONTAINER_INHERIT_ACE,
+    "NP" => crate::AceHeaderFlags::NO_PROPAGATE_INHERIT_ACE,
+    "IO" => crate::AceHeaderFlags::INHERIT_ONLY_ACE,
+    "ID" => crate::AceHeaderFlags::INHERITED_ACE,
+    "CR" => crate::AceHeaderFlags::CRITICAL,
+    "SA" => crate::AceHeaderFlags::SUCCESSFUL_ACCESS_ACE_FLAG,
+    "FA" => crate::AceHeaderFlags::FAILED_ACCESS_ACE_FLAG,
+    "TP" => crate::AceHeaderFlags::TRUST_PROTECTED_FILTER,
 }
 
 pub AccessMask: crate::AccessMask = {

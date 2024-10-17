@@ -1,7 +1,7 @@
 use binrw::binrw;
 use std::{fmt::Display, mem};
 
-use crate::{sddl_h::*, AccessMask, AceFlags, AceHeader, Guid, RawSize, Sid};
+use crate::{sddl_h::*, AccessMask, AceFlags, AceHeader, AceHeaderFlags, Guid, RawSize, Sid};
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
 #[binrw]
@@ -34,22 +34,15 @@ pub enum Ace {
     ACCESS_ALLOWED_OBJECT_ACE {
         header: AceHeader,
 
+        flags: AceFlags,
+
         /// A GUID that identifies a property set, property, extended right, or
         /// type of child object. The purpose of this GUID depends on the user
         /// rights specified in the Mask field. This field is valid only if the
         /// ACE_OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise,
-        /// the ObjectType field is ignored. For information on access rights
-        /// and for a mapping of the control access rights to the corresponding
-        /// GUID value that identifies each right, see [MS-ADTS] sections
-        /// 5.1.3.2 and 5.1.3.2.1.
-        ///
-        /// ACCESS_MASK bits are not mutually exclusive. Therefore, the
-        /// ObjectType field can be set in an ACE with any ACCESS_MASK. If the
-        /// AccessCheck algorithm calls this ACE and does not find an
-        /// appropriate GUID, then that ACE will be ignored. For more
-        /// information on access checks and object access, see [MS-ADTS]
-        /// section 5.1.3.3.3.
-        object_type: Guid,
+        /// the ObjectType field is ignored.
+        #[brw(if(flags.contains(AceFlags::ACE_OBJECT_TYPE_PRESENT)))]
+        object_type: Option<Guid>,
 
         /// A GUID that identifies the type of child object that can inherit the
         /// ACE. Inheritance is also controlled by the inheritance flags in the
@@ -57,7 +50,8 @@ pub enum Ace {
         /// on the child objects. This field is valid only if the
         /// ACE_INHERITED_OBJECT_TYPE_PRESENT bit is set in the Flags member.
         /// Otherwise, the InheritedObjectType field is ignored.
-        inherited_object_type: Guid,
+        #[brw(if(flags.contains(AceFlags::ACE_INHERITED_OBJECT_TYPE_PRESENT)))]
+        inherited_object_type: Option<Guid>,
 
         /// The SID of a trustee. The length of the SID MUST be a multiple of 4.
         #[brw(assert(sid.len() % 4 == 0))]
@@ -90,8 +84,24 @@ pub enum Ace {
     #[brw(magic = 0x06u8)]
     ACCESS_DENIED_OBJECT_ACE {
         header: AceHeader,
-        object_type: Guid,
-        inherited_object_type: Guid,
+        flags: AceFlags,
+
+        /// A GUID that identifies a property set, property, extended right, or
+        /// type of child object. The purpose of this GUID depends on the user
+        /// rights specified in the Mask field. This field is valid only if the
+        /// ACE_OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise,
+        /// the ObjectType field is ignored.
+        #[brw(if(flags.contains(AceFlags::ACE_OBJECT_TYPE_PRESENT)))]
+        object_type: Option<Guid>,
+
+        /// A GUID that identifies the type of child object that can inherit the
+        /// ACE. Inheritance is also controlled by the inheritance flags in the
+        /// ACE_HEADER, as well as by any protection against inheritance placed
+        /// on the child objects. This field is valid only if the
+        /// ACE_INHERITED_OBJECT_TYPE_PRESENT bit is set in the Flags member.
+        /// Otherwise, the InheritedObjectType field is ignored.
+        #[brw(if(flags.contains(AceFlags::ACE_INHERITED_OBJECT_TYPE_PRESENT)))]
+        inherited_object_type: Option<Guid>,
 
         ///  The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
@@ -165,12 +175,15 @@ pub enum Ace {
     ACCESS_ALLOWED_CALLBACK_OBJECT_ACE {
         header: AceHeader,
 
+        flags: AceFlags,
+
         /// A GUID that identifies a property set, property, extended right, or
         /// type of child object. The purpose of this GUID depends on the user
         /// rights specified in the Mask field. This field is valid only if the
-        /// ACE _OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise,
+        /// ACE_OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise,
         /// the ObjectType field is ignored.
-        object_type: Guid,
+        #[brw(if(flags.contains(AceFlags::ACE_OBJECT_TYPE_PRESENT)))]
+        object_type: Option<Guid>,
 
         /// A GUID that identifies the type of child object that can inherit the
         /// ACE. Inheritance is also controlled by the inheritance flags in the
@@ -178,7 +191,8 @@ pub enum Ace {
         /// on the child objects. This field is valid only if the
         /// ACE_INHERITED_OBJECT_TYPE_PRESENT bit is set in the Flags member.
         /// Otherwise, the InheritedObjectType field is ignored.
-        inherited_object_type: Guid,
+        #[brw(if(flags.contains(AceFlags::ACE_INHERITED_OBJECT_TYPE_PRESENT)))]
+        inherited_object_type: Option<Guid>,
 
         ///  The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
@@ -211,12 +225,15 @@ pub enum Ace {
     ACCESS_DENIED_CALLBACK_OBJECT_ACE {
         header: AceHeader,
 
+        flags: AceFlags,
+
         /// A GUID that identifies a property set, property, extended right, or
         /// type of child object. The purpose of this GUID depends on the user
         /// rights specified in the Mask field. This field is valid only if the
-        /// ACE _OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise,
+        /// ACE_OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise,
         /// the ObjectType field is ignored.
-        object_type: Guid,
+        #[brw(if(flags.contains(AceFlags::ACE_OBJECT_TYPE_PRESENT)))]
+        object_type: Option<Guid>,
 
         /// A GUID that identifies the type of child object that can inherit the
         /// ACE. Inheritance is also controlled by the inheritance flags in the
@@ -224,7 +241,8 @@ pub enum Ace {
         /// on the child objects. This field is valid only if the
         /// ACE_INHERITED_OBJECT_TYPE_PRESENT bit is set in the Flags member.
         /// Otherwise, the InheritedObjectType field is ignored.
-        inherited_object_type: Guid,
+        #[brw(if(flags.contains(AceFlags::ACE_INHERITED_OBJECT_TYPE_PRESENT)))]
+        inherited_object_type: Option<Guid>,
 
         ///  The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
@@ -279,12 +297,15 @@ pub enum Ace {
     SYSTEM_AUDIT_OBJECT_ACE {
         header: AceHeader,
 
+        flags: AceFlags,
+
         /// A GUID that identifies a property set, a property, an extended
         /// right, or a type of child object. The purpose of this GUID depends
         /// on the user rights specified in the Mask field. This field is valid
         /// only if the ACE_OBJECT_TYPE_PRESENT bit is set in the Flags field.
         /// Otherwise, the ObjectType field is ignored.
-        object_type: Guid,
+        #[brw(if(flags.contains(AceFlags::ACE_OBJECT_TYPE_PRESENT)))]
+        object_type: Option<Guid>,
 
         /// A GUID that identifies the type of child object that can inherit the
         /// ACE. Inheritance is also controlled by the inheritance flags in the
@@ -292,7 +313,8 @@ pub enum Ace {
         /// on the child objects. This field is valid only if the
         /// ACE_INHERITED_OBJECT_TYPE_PRESENT bit is set in the Flags member.
         /// Otherwise, the InheritedObjectType field is ignored.
-        inherited_object_type: Guid,
+        #[brw(if(flags.contains(AceFlags::ACE_INHERITED_OBJECT_TYPE_PRESENT)))]
+        inherited_object_type: Option<Guid>,
 
         ///  The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
@@ -376,12 +398,15 @@ pub enum Ace {
     SYSTEM_AUDIT_CALLBACK_OBJECT_ACE {
         header: AceHeader,
 
+        flags: AceFlags,
+
         /// A GUID that identifies a property set, property, extended right, or
         /// type of child object. The purpose of this GUID depends on the user
         /// rights specified in the Mask field. This field is valid only if the
         /// ACE_OBJECT_TYPE_PRESENT bit is set in the Flags field. Otherwise,
         /// the ObjectType field is ignored.
-        object_type: Guid,
+        #[brw(if(flags.contains(AceFlags::ACE_OBJECT_TYPE_PRESENT)))]
+        object_type: Option<Guid>,
 
         /// A GUID that identifies the type of child object that can inherit the
         /// ACE. Inheritance is also controlled by the inheritance flags in the
@@ -389,7 +414,8 @@ pub enum Ace {
         /// on the child objects. This field is valid only if the
         /// ACE_INHERITED_OBJECT_TYPE_PRESENT bit is set in the Flags member.
         /// Otherwise, the InheritedObjectType field is ignored.
-        inherited_object_type: Guid,
+        #[brw(if(flags.contains(AceFlags::ACE_INHERITED_OBJECT_TYPE_PRESENT)))]
+        inherited_object_type: Option<Guid>,
 
         ///  The SID of a trustee.
         #[brw(assert(sid.len() % 4 == 0))]
@@ -415,9 +441,6 @@ pub enum Ace {
     #[brw(magic = 0x12u8)]
     SYSTEM_RESOURCE_ATTRIBUTE_ACE {
         header: AceHeader,
-        object_type: Guid,
-
-        inherited_object_type: Guid,
 
         ///  The SID corresponding to the Everyone SID (S-1-1-0) in binary form.
         #[brw(assert(sid.len() % 4 == 0))]
@@ -481,7 +504,7 @@ impl RawSize for Ace {
 
 macro_rules! ctor {
     ($ctor_name: ident, $ty: ident) => {
-        pub fn $ctor_name(flags: AceFlags, mask: AccessMask, sid: Sid) -> Self {
+        pub fn $ctor_name(flags: AceHeaderFlags, mask: AccessMask, sid: Sid) -> Self {
             let header = AceHeader::new(flags, sid.raw_size(), mask);
             let _padding = vec![0u8; *header.expected_padding() as usize];
             Self::$ty {
@@ -496,20 +519,30 @@ macro_rules! ctor {
 macro_rules! ctor_object {
     ($ctor_name: ident, $ty: ident) => {
         pub fn $ctor_name(
-            flags: AceFlags,
+            flags: AceHeaderFlags,
             mask: AccessMask,
-            object_type: Guid,
-            inherited_object_type: Guid,
+            object_type: Option<Guid>,
+            inherited_object_type: Option<Guid>,
             sid: Sid,
         ) -> Self {
             let header = AceHeader::new(
                 flags,
-                sid.raw_size() + object_type.raw_size() + inherited_object_type.raw_size(),
+                sid.raw_size()
+                    + object_type.map(|o| o.raw_size()).unwrap_or(0)
+                    + inherited_object_type.map(|o| o.raw_size()).unwrap_or(0),
                 mask,
             );
+            let flags = object_type
+                .and(Some(AceFlags::ACE_OBJECT_TYPE_PRESENT))
+                .unwrap_or(AceFlags::empty())
+                | inherited_object_type
+                    .and(Some(AceFlags::ACE_INHERITED_OBJECT_TYPE_PRESENT))
+                    .unwrap_or(AceFlags::empty());
+
             let _padding = vec![0u8; *header.expected_padding() as usize];
             Self::$ty {
                 header,
+                flags,
                 sid,
                 object_type,
                 inherited_object_type,
@@ -522,7 +555,7 @@ macro_rules! ctor_object {
 macro_rules! ctor_appdata {
     ($ctor_name: ident, $ty: ident) => {
         pub fn $ctor_name(
-            flags: AceFlags,
+            flags: AceHeaderFlags,
             mask: AccessMask,
             sid: Sid,
             application_data: Vec<u8>,
@@ -551,21 +584,27 @@ macro_rules! ctor_appdata {
 macro_rules! ctor_object_appdata {
     ($ctor_name: ident, $ty: ident) => {
         pub fn $ctor_name(
-            flags: AceFlags,
+            flags: AceHeaderFlags,
             mask: AccessMask,
-            object_type: Guid,
-            inherited_object_type: Guid,
+            object_type: Option<Guid>,
+            inherited_object_type: Option<Guid>,
             sid: Sid,
             application_data: Vec<u8>,
         ) -> Self {
             let header = AceHeader::new(
                 flags,
                 sid.raw_size()
-                    + object_type.raw_size()
-                    + inherited_object_type.raw_size()
+                    + object_type.map(|o| o.raw_size()).unwrap_or(0)
+                    + inherited_object_type.map(|o| o.raw_size()).unwrap_or(0)
                     + application_data.len() as u16,
                 mask,
             );
+            let flags = object_type
+                .and(Some(AceFlags::ACE_OBJECT_TYPE_PRESENT))
+                .unwrap_or(AceFlags::empty())
+                | inherited_object_type
+                    .and(Some(AceFlags::ACE_INHERITED_OBJECT_TYPE_PRESENT))
+                    .unwrap_or(AceFlags::empty());
 
             let is_conditional = if application_data.len() >= 4 {
                 application_data[0..4] == [0x61, 0x72, 0x74, 0x78]
@@ -576,6 +615,7 @@ macro_rules! ctor_object_appdata {
             let _padding = vec![0u8; *header.expected_padding() as usize];
             Self::$ty {
                 header,
+                flags,
                 sid,
                 object_type,
                 inherited_object_type,
@@ -607,7 +647,7 @@ impl Ace {
     ctor_appdata!(audit_callback, SYSTEM_AUDIT_CALLBACK_ACE);
     ctor!(mandatory_label, SYSTEM_MANDATORY_LABEL_ACE);
     ctor_object_appdata!(audit_callback_object, SYSTEM_AUDIT_CALLBACK_OBJECT_ACE);
-    ctor_object_appdata!(resource_attribute, SYSTEM_RESOURCE_ATTRIBUTE_ACE);
+    ctor_appdata!(resource_attribute, SYSTEM_RESOURCE_ATTRIBUTE_ACE);
     ctor!(scoped_policy_id, SYSTEM_SCOPED_POLICY_ID_ACE);
 
     fn type_string(&self) -> &'static str {
@@ -703,8 +743,6 @@ impl Ace {
             }
             | Ace::SYSTEM_RESOURCE_ATTRIBUTE_ACE {
                 header: _,
-                object_type: _,
-                inherited_object_type: _,
                 sid,
                 ..
             } => sid,

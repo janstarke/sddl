@@ -13,7 +13,7 @@ pub const ACE_HEADER_SIZE: u16 = 8;
 pub struct AceHeader {
     /// An unsigned 8-bit integer that specifies a set of ACE type-specific
     /// control flags.
-    ace_flags: AceFlags,
+    ace_flags: AceHeaderFlags,
 
     /// An unsigned 16-bit integer that specifies the size, in bytes, of the
     /// ACE. The AceSize field can be greater than the sum of the individual
@@ -32,7 +32,7 @@ pub struct AceHeader {
 }
 
 impl AceHeader {
-    pub fn new(ace_flags: AceFlags, ace_size_without_header: u16, mask: AccessMask) -> Self {
+    pub fn new(ace_flags: AceHeaderFlags, ace_size_without_header: u16, mask: AccessMask) -> Self {
         // make sure the size is a multiple of 4
 
         let expected_padding = std::cmp::min(0, 4 - (ace_size_without_header % 4));
@@ -133,7 +133,7 @@ bitflags! {
     ///
     /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
     #[derive(Eq, PartialEq, Clone, Copy, Debug)]
-    pub struct AceFlags: u8 {
+    pub struct AceHeaderFlags: u8 {
         /// Child objects that are containers, such as directories, inherit the
         /// ACE as an effective ACE. The inherited ACE is inheritable unless the
         /// NO_PROPAGATE_INHERIT_ACE bit flag is also set.
@@ -178,10 +178,10 @@ bitflags! {
     }
 }
 
-impl AceFlags {
+impl AceHeaderFlags {
     pub fn sddl_string(&self) -> String {
         let mut sddl = String::with_capacity(16);
-        let mut flag = |f: AceFlags, s: &str| {
+        let mut flag = |f: AceHeaderFlags, s: &str| {
             if self.contains(f) { sddl.push_str(s);}
         };
         flag(Self::OBJECT_INHERIT_ACE, SDDL_OBJECT_INHERIT);
@@ -197,7 +197,7 @@ impl AceFlags {
     }
 }
 
-impl BinRead for AceFlags {
+impl BinRead for AceHeaderFlags {
     type Args<'a> = ();
 
     fn read_options<R: std::io::Read + std::io::Seek>(
@@ -206,11 +206,11 @@ impl BinRead for AceFlags {
         args: Self::Args<'_>,
     ) -> binrw::BinResult<Self> {
         let raw_value: u8 = reader.read_type_args(endian, args)?;
-        Ok(AceFlags::from_bits(raw_value).unwrap())
+        Ok(AceHeaderFlags::from_bits(raw_value).unwrap())
     }
 }
 
-impl BinWrite for AceFlags {
+impl BinWrite for AceHeaderFlags {
     type Args<'a> = ();
 
     fn write_options<W: std::io::Write + std::io::Seek>(
