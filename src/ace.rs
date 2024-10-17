@@ -1,7 +1,7 @@
 use binrw::binrw;
 use std::fmt::Display;
 
-use crate::{sddl_h::*, AccessMask, AceFlags, AceHeader, AceHeaderFlags, Guid, RawSize, Sid};
+use crate::{sddl_h::*, AccessMask, AceFlags, AceHeader, AceHeaderFlags, Guid, RawSize, Sid, ACE_HEADER_SIZE};
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
 #[binrw]
@@ -123,7 +123,7 @@ pub enum Ace {
 
         /// Optional application data. The size of the application data is
         /// determined by the AceSize field of the ACE_HEADER.
-        #[br(count=*header.ace_size() as usize - sid.len())]
+        #[br(count=*header.ace_size() as usize - (ACE_HEADER_SIZE as usize + sid.len()))]
         application_data: Vec<u8>,
 
         /// Conditional ACEs are a form of CALLBACK ACEs with a special format
@@ -150,7 +150,7 @@ pub enum Ace {
 
         /// Optional application data. The size of the application data is
         /// determined by the AceSize field of the ACE_HEADER.
-        #[br(count=*header.ace_size() as usize - sid.len())]
+        #[br(count=*header.ace_size() as usize - (ACE_HEADER_SIZE as usize + sid.len()))]
         application_data: Vec<u8>,
 
         /// Conditional ACEs are a form of CALLBACK ACEs with a special format
@@ -200,7 +200,7 @@ pub enum Ace {
 
         /// Optional application data. The size of the application data is
         /// determined by the AceSize field of the ACE_HEADER.
-        #[br(count=*header.ace_size() as usize - (flags.raw_size() as usize
+        #[br(count=*header.ace_size() as usize - (ACE_HEADER_SIZE as usize + flags.raw_size() as usize
                                                 + object_type.map(|g| g.raw_size() as usize).unwrap_or(0)
                                                 + inherited_object_type.map(|g| g.raw_size() as usize).unwrap_or(0)
                                                 + sid.len()),dbg)]
@@ -253,7 +253,7 @@ pub enum Ace {
 
         /// Optional application data. The size of the application data is
         /// determined by the AceSize field of the ACE_HEADER.
-        #[br(count=*header.ace_size() as usize - (flags.raw_size() as usize
+        #[br(count=*header.ace_size() as usize - (ACE_HEADER_SIZE as usize + flags.raw_size() as usize
                                                 + object_type.map(|g| g.raw_size() as usize).unwrap_or(0)
                                                 + inherited_object_type.map(|g| g.raw_size() as usize).unwrap_or(0)
                                                 + sid.len()),dbg)]
@@ -328,7 +328,7 @@ pub enum Ace {
 
         /// Optional application data. The size of the application data is
         /// determined by the AceSize field of the ACE_HEADER.
-        #[br(count=*header.ace_size() as usize - (flags.raw_size() as usize
+        #[br(count=*header.ace_size() as usize - (ACE_HEADER_SIZE as usize + flags.raw_size() as usize
                                                 + object_type.map(|g| g.raw_size() as usize).unwrap_or(0)
                                                 + inherited_object_type.map(|g| g.raw_size() as usize).unwrap_or(0)
                                                 + sid.len()),dbg)]
@@ -361,7 +361,7 @@ pub enum Ace {
 
         /// Optional application data. The size of the application data is
         /// determined by the AceSize field of the ACE_HEADER.
-        #[br(count=*header.ace_size() as usize - sid.len())]
+        #[br(count=*header.ace_size() as usize - (ACE_HEADER_SIZE as usize + sid.len()))]
         application_data: Vec<u8>,
 
         /// Conditional ACEs are a form of CALLBACK ACEs with a special format
@@ -432,7 +432,7 @@ pub enum Ace {
 
         /// Optional application data. The size of the application data is
         /// determined by the AceSize field of the ACE_HEADER.
-        #[br(count=*header.ace_size() as usize - (flags.raw_size() as usize
+        #[br(count=*header.ace_size() as usize - (ACE_HEADER_SIZE as usize + flags.raw_size() as usize
                                                 + object_type.map(|g| g.raw_size() as usize).unwrap_or(0)
                                                 + inherited_object_type.map(|g| g.raw_size() as usize).unwrap_or(0)
                                                 + sid.len()),dbg)]
@@ -461,7 +461,7 @@ pub enum Ace {
         /// Data describing a resource attribute type, name, and value(s). This
         /// data MUST be encoded in CLAIM_SECURITY_ATTRIBUTE_RELATIVE_V1 format
         /// as described in section 2.4.10.1
-        #[br(count=*header.ace_size() as usize - sid.len())]
+        #[br(count=*header.ace_size() as usize - (ACE_HEADER_SIZE as usize + sid.len()))]
         application_data: Vec<u8>,
 
         #[br(calc(if application_data.len() >= 4 {application_data[0..4] == [0x61, 0x72, 0x74, 0x78]} else {false}))]
