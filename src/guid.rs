@@ -2,6 +2,7 @@ use std::fmt::{Debug, Display};
 
 use binrw::{BinRead, BinReaderExt, BinWrite, BinWriterExt};
 
+use serde::Serialize;
 use uuid::Uuid;
 
 use crate::RawSize;
@@ -59,5 +60,13 @@ impl<'v> TryFrom<&'v str> for Guid {
 impl RawSize for Guid {
     fn raw_size(&self) -> u16 {
         std::mem::size_of::<u128>() as u16
+    }
+}
+
+impl Serialize for Guid {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+        serializer.serialize_str(&self.to_string())
     }
 }

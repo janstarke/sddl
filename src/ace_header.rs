@@ -1,6 +1,7 @@
 use binrw::{binrw, BinRead, BinReaderExt, BinWrite, BinWriterExt};
 use bitflags::bitflags;
 use getset::Getters;
+use serde::Serialize;
 use strum::Display;
 
 use crate::{sddl_h::*, AccessMask};
@@ -8,7 +9,7 @@ use crate::{sddl_h::*, AccessMask};
 pub const ACE_HEADER_SIZE: u16 = 8;
 
 #[binrw]
-#[derive(Eq, PartialEq, Getters, Clone, Copy, Debug)]
+#[derive(Eq, PartialEq, Getters, Clone, Copy, Debug, Serialize)]
 #[getset(get = "pub")]
 pub struct AceHeader {
     /// An unsigned 8-bit integer that specifies a set of ACE type-specific
@@ -22,12 +23,14 @@ pub struct AceHeader {
     /// for the callback ACEs types, that data is implementation-specific.
     /// Otherwise, this additional data is not interpreted and MUST be ignored.
     #[brw(assert(ace_size%4 == 0))]
+    #[serde(skip)]
     ace_size: u16,
 
     mask: AccessMask,
 
     #[br(calc=std::cmp::min(0, 4-(ace_size%4)))]
     #[bw(ignore)]
+    #[serde(skip)]
     expected_padding: u16,
 }
 
@@ -52,7 +55,7 @@ impl AceHeader {
 #[binrw]
 #[brw(repr=u8)]
 #[allow(non_camel_case_types)]
-#[derive(Eq, PartialEq, Display, Clone, Copy, Debug)]
+#[derive(Eq, PartialEq, Display, Clone, Copy, Debug, Serialize)]
 pub enum AceType {
     /// Access-allowed ACE that uses the ACCESS_ALLOWED_ACE (section 2.4.4.2)
     /// structure.
@@ -221,5 +224,18 @@ impl BinWrite for AceHeaderFlags {
     ) -> binrw::BinResult<()> {
         let raw_value = self.bits();
         writer.write_type_args(&raw_value, endian, args)
+    }
+}
+
+
+impl serde::Serialize for AceHeaderFlags {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        bitflags_serde_legacy::serialize(self, "AceHeaderFlags", serializer)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for AceHeaderFlags {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        bitflags_serde_legacy::deserialize("AceHeaderFlags", deserializer)
     }
 }

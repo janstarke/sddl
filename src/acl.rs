@@ -7,6 +7,7 @@ use crate::ControlFlags;
 use binrw::binrw;
 use derivative::Derivative;
 use getset::Getters;
+use serde::Serialize;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum AclType {
@@ -31,7 +32,7 @@ pub const ACL_HEADER_SIZE: u16 = 1 + 1 + 2 + 2 + 2;
 ///
 /// <https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-acl>
 #[binrw]
-#[derive(Derivative, Getters, Debug)]
+#[derive(Derivative, Getters, Debug, Clone, Serialize)]
 #[derivative(Eq, PartialEq)]
 #[getset(get = "pub")]
 #[brw(little,import(control_flags: ControlFlags, acl_type: AclType))]
@@ -47,13 +48,16 @@ pub struct Acl {
     #[br(temp)]
     #[bw(calc(0))]
     #[getset(skip)]
+    #[serde(skip)]
     _sbz1: u8,
 
     /// Specifies the size, in bytes, of the ACL. This value includes the ACL
     /// structure, all the ACEs, and the potential unused memory.
+    #[serde(skip)]
     acl_size: u16,
 
     /// Specifies the number of ACEs stored in the ACL.
+    #[serde(skip)]
     ace_count: u16,
 
     /// Specifies two zero-bytes of padding that align the ACL structure on a
@@ -61,6 +65,7 @@ pub struct Acl {
     #[br(temp)]
     #[bw(calc(0))]
     #[getset(skip)]
+    #[serde(skip)]
     _sbz2: u16,
 
     #[br(count=ace_count)]
@@ -68,10 +73,12 @@ pub struct Acl {
 
     #[br(calc=acl_type)]
     #[bw(ignore)]
+    #[serde(skip)]
     acl_type: AclType,
 
     #[br(calc=control_flags)]
     #[bw(ignore)]
+    #[serde(skip)]
 
     // this flag field might contain information about the whole security
     // descriptor, which might differ from the SD where the other
@@ -93,7 +100,7 @@ impl Display for Acl {
 }
 
 #[binrw]
-#[derive(Eq, PartialEq, Clone, Copy, Default, Debug)]
+#[derive(Eq, PartialEq, Clone, Copy, Default, Debug, Serialize)]
 #[allow(non_camel_case_types)]
 #[brw(repr=u8)]
 pub enum AclRevision {

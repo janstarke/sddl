@@ -324,6 +324,18 @@ impl BinWrite for AccessMask {
     }
 }
 
+impl serde::Serialize for AccessMask {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        bitflags_serde_legacy::serialize(self, "AccessMask", serializer)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for AccessMask {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        bitflags_serde_legacy::deserialize("AccessMask", deserializer)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::AccessMask;

@@ -9,6 +9,32 @@ extern {
     type Error = Error;
 }
 
+pub SecurityDescriptor: crate::SecurityDescriptor = {
+    "O:" <owner: Sid>
+    "G:" <group: Sid>
+    "D:" <dflags: AclFlags> <dace_list: AceList>
+    "S:" <sflags: AclFlags> <sace_list: AceList> => {
+        let dacl = crate::Acl::new(
+            crate::AclRevision::ACL_REVISION,
+            crate::AclType::DACL,
+            dflags & !(crate::ControlFlags::SystemAclProtected | crate::ControlFlags::SystemAclAutoInheritRequired | crate::ControlFlags::SystemAclAutoInherited),
+            dace_list
+        );
+        let sacl = crate::Acl::new(
+            crate::AclRevision::ACL_REVISION,
+            crate::AclType::SACL,
+            sflags & !(crate::ControlFlags::DiscretionaryAclProtected | crate::ControlFlags::DiscretionaryAclAutoInheritRequired | crate::ControlFlags::DiscretionaryAclAutoInherited),
+            sace_list
+        );
+        crate::SecurityDescriptor::new(
+            Some(owner),
+            Some(group),
+            Some(dacl),
+            Some(sacl)
+        )
+    }
+}
+
 // (Type;Flags;Access;ObjectType;InheritedObjectType;SID[;ExtraData])
 
 // there is no way to parse SACL and DACL flags separately. So, we set both,

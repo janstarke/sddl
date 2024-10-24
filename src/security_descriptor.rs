@@ -2,14 +2,16 @@ use std::{fmt::Display, io::Cursor};
 
 use binrw::{binread, FilePtr, BinReaderExt};
 use getset::Getters;
+use serde::Serialize;
 
 use crate::{sddl_h::*, Acl, AclType, ControlFlags, Offset, Sid};
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/2918391b-75b9-4eeb-83f0-7fdc04a5c6c9>
 #[binread]
-#[derive(Eq, PartialEq, Getters)]
+#[derive(Eq, PartialEq, Getters, Serialize)]
 #[getset(get = "pub")]
 pub struct SecurityDescriptor {
+    #[serde(skip)]
     sd_offset: Offset,
 
     #[br(assert(revision == 1))]
@@ -18,41 +20,60 @@ pub struct SecurityDescriptor {
 
     #[getset(skip)]
     #[br(temp)]
+    #[serde(skip)]
     _reserved1: u8,
 
     flags: ControlFlags,
 
-    #[br(little,
+    #[serde(skip)]
+    #[br(little,temp,
         offset=sd_offset.0,
         if(! flags.contains(ControlFlags::OwnerDefaulted)))
         ]
     owner_ref: Option<FilePtr<u32, Sid>>,
 
-    #[br(little,
+    #[serde(skip)]
+    #[br(little,temp,
         offset=sd_offset.0,
         if(! flags.contains(ControlFlags::GroupDefaulted)))
         ]
     group_ref: Option<FilePtr<u32, Sid>>,
 
-    #[br(little,
+    #[serde(skip)]
+    #[br(little,temp,
         offset=sd_offset.0,
         if(flags.contains(ControlFlags::SystemAclPresent)),
         args{inner: (flags, AclType::SACL)})
         ]
     sacl_ref: Option<FilePtr<u32, Acl>>,
 
+    #[serde(skip)]
     #[br(temp, if(! flags.contains(ControlFlags::SystemAclPresent), 0))]
     _sacl_ref: u32,
 
-    #[br(little,
+    #[serde(skip)]
+    #[br(little,temp,
         offset=sd_offset.0,
         if(flags.contains(ControlFlags::DiscretionaryAclPresent)),
         args{inner: (flags, AclType::DACL)})
         ]
     dacl_ref: Option<FilePtr<u32, Acl>>,
 
+    #[serde(skip)]
     #[br(temp, if(! flags.contains(ControlFlags::DiscretionaryAclPresent), 0))]
     _dacl_ref: u32,
+
+    #[br(calc=owner_ref.as_ref().map(|d| d.value.clone()))]
+    owner: Option<Sid>,
+
+    #[br(calc=group_ref.as_ref().map(|d| d.value.clone()))]
+    group: Option<Sid>,
+
+    #[br(calc=dacl_ref.as_ref().map(|d| d.value.clone()))]
+    dacl: Option<Acl>,
+
+    #[br(calc=sacl_ref.as_ref().map(|d| d.value.clone()))]
+    sacl: Option<Acl>,
 }
 
 impl SecurityDescriptor {
@@ -84,24 +105,33 @@ impl SecurityDescriptor {
         Ok(cursor.read_le()?)
     }
 
-    pub fn owner(&self) -> Option<&Sid> {
-        self.owner_ref.as_ref().map(|d| &d.value)
-    }
-
-    pub fn group(&self) -> Option<&Sid> {
-        self.group_ref.as_ref().map(|d| &d.value)
-    }
-
-    pub fn sacl(&self) -> Option<&Acl> {
-        self.sacl_ref.as_ref().map(|d| &d.value)
-    }
-
-    pub fn dacl(&self) -> Option<&Acl> {
-        self.dacl_ref.as_ref().map(|d| &d.value)
+    pub fn new(owner: Option<Sid>, group: Option<Sid>, dacl: Option<Acl>, sacl: Option<Acl>) -> Self {
+        let mut flags = ControlFlags::empty();
+        if owner.is_some() {
+            flags |= ControlFlags::OwnerDefaulted
+        }
+        if group.is_some() {
+            flags |= ControlFlags::GroupDefaulted
+        }
+        if let Some(dacl) = &dacl {
+            flags |= *dacl.control_flags() | ControlFlags::DiscretionaryAclPresent;
+        }
+        if let Some(sacl) = &sacl {
+            flags |= *sacl.control_flags() | ControlFlags::SystemAclPresent;
+        }
+        Self {
+            sd_offset: Offset(0),
+            revision: 1,
+            flags,
+            owner,
+            group,
+            sacl,
+            dacl,
+        }
     }
 
     pub fn sacl_as_sddl_string(&self) -> Option<String> {
-        self.sacl().map(|sacl| {
+        self.sacl().as_ref().map(|sacl| {
             let mut flags = String::with_capacity(5);
             if self.flags().contains(ControlFlags::SystemAclProtected) {
                 flags.push_str(SDDL_PROTECTED);
@@ -120,7 +150,7 @@ impl SecurityDescriptor {
     }
 
     pub fn dacl_as_sddl_string(&self) -> Option<String> {
-        self.dacl().map(|dacl| {
+        self.dacl().as_ref().map(|dacl| {
             let mut flags = String::with_capacity(5);
             if self
                 .flags()
@@ -142,6 +172,10 @@ impl SecurityDescriptor {
             }
             format!("{SDDL_DACL}{SDDL_DELIMINATOR}{flags}{dacl}")
         })
+    }
+
+    pub fn from_sddl(value: &str, domain_rid: Option<&[u32]>) -> Result<Self, crate::Error> {
+        Ok(crate::parser::SecurityDescriptorParser::new().parse(domain_rid, value)?)
     }
 }
 
@@ -170,3 +204,4 @@ impl TryFrom<&[u8]> for SecurityDescriptor {
         Self::from_bytes(value)
     }
 }
+

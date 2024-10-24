@@ -43,3 +43,15 @@ impl BinWrite for AceFlags {
         writer.write_type_args(&raw_value, endian, args)
     }
 }
+
+impl serde::Serialize for AceFlags {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        bitflags_serde_legacy::serialize(self, "AceFlags", serializer)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for AceFlags {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        bitflags_serde_legacy::deserialize("AceFlags", deserializer)
+    }
+}

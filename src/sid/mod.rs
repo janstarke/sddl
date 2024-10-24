@@ -10,6 +10,7 @@ mod identifier_authority;
 pub use identifier_authority::constants::*;
 pub use identifier_authority::*;
 use lazy_regex::regex_captures;
+use serde::Serialize;
 
 use crate::{sddl_h::*, RawSize};
 
@@ -34,7 +35,7 @@ pub const MAX_SUB_AUTHORITIES: u8 = 15;
 ///
 /// <https://learn.microsoft.com/en-us/windows/win32/secauthz/sid-components>
 #[binrw]
-#[derive(Eq, PartialEq, Getters)]
+#[derive(Eq, PartialEq, Getters, Clone)]
 #[getset(get = "pub")]
 pub struct Sid {
     #[br(assert(revision == 1))]
@@ -76,6 +77,14 @@ impl Display for Sid {
         let sub_authorities = sub_authorities.join("-");
 
         write!(f, "S-{revision}-{identifier_authority}-{sub_authorities}")
+    }
+}
+
+impl Serialize for Sid {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+        serializer.serialize_str(&self.to_string())
     }
 }
 

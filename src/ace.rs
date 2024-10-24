@@ -1,11 +1,12 @@
 use binrw::binrw;
+use serde::Serialize;
 use std::fmt::Display;
 
 use crate::{sddl_h::*, AccessMask, AceFlags, AceHeader, AceHeaderFlags, Guid, RawSize, Sid, ACE_HEADER_SIZE};
 
 /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
 #[binrw]
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone, Serialize)]
 #[allow(non_camel_case_types)]
 pub enum Ace {
     /// The ACCESS_ALLOWED_ACE structure defines an ACE for the discretionary

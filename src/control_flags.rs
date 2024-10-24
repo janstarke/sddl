@@ -92,3 +92,16 @@ impl ControlFlags {
         }
     }
 }
+
+
+impl serde::Serialize for ControlFlags {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        bitflags_serde_legacy::serialize(self, "ControlFlags", serializer)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for ControlFlags {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        bitflags_serde_legacy::deserialize("ControlFlags", deserializer)
+    }
+}
