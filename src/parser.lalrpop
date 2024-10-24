@@ -53,9 +53,41 @@ pub Acl: crate::Acl = {
         ace_list
     )
 }
+// "PAR" and "PAI" conflict with "PA", so we create distinct tokens for these flags
 pub AclFlags: crate::ControlFlags = {
-    <s:SingleAclFlag> => s,
-    <a:AclFlags> <s:SingleAclFlag> => a | s
+    //<s:SingleAclFlag> => s,
+    //<a:AclFlags> <s:SingleAclFlag> => a | s
+    "P" =>      crate::ControlFlags::SystemAclProtected |
+                crate::ControlFlags::DiscretionaryAclProtected,
+
+    "PAR"   =>  crate::ControlFlags::SystemAclProtected |
+                crate::ControlFlags::DiscretionaryAclProtected |
+                crate::ControlFlags::SystemAclAutoInheritRequired |
+                crate::ControlFlags::DiscretionaryAclAutoInheritRequired,
+
+    "PAI"   =>  crate::ControlFlags::SystemAclProtected |
+                crate::ControlFlags::DiscretionaryAclProtected |
+                crate::ControlFlags::SystemAclAutoInherited |
+                crate::ControlFlags::DiscretionaryAclAutoInherited,
+    
+    "PAIAR" =>  crate::ControlFlags::SystemAclProtected |
+                crate::ControlFlags::DiscretionaryAclProtected |
+                crate::ControlFlags::SystemAclAutoInherited |
+                crate::ControlFlags::DiscretionaryAclAutoInherited |
+                crate::ControlFlags::SystemAclAutoInheritRequired |
+                crate::ControlFlags::DiscretionaryAclAutoInheritRequired,
+    
+    "PARAI" =>  crate::ControlFlags::SystemAclProtected |
+                crate::ControlFlags::DiscretionaryAclProtected |
+                crate::ControlFlags::SystemAclAutoInherited |
+                crate::ControlFlags::DiscretionaryAclAutoInherited |
+                crate::ControlFlags::SystemAclAutoInheritRequired |
+                crate::ControlFlags::DiscretionaryAclAutoInheritRequired,
+
+    "AR" =>     crate::ControlFlags::SystemAclAutoInheritRequired |
+                crate::ControlFlags::DiscretionaryAclAutoInheritRequired,
+    "AI" =>     crate::ControlFlags::SystemAclAutoInherited |
+                crate::ControlFlags::DiscretionaryAclAutoInherited,
 }
 
 SingleAclFlag: crate::ControlFlags = {

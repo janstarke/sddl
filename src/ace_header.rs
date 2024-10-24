@@ -135,7 +135,7 @@ pub enum AceType {
 bitflags! {
     ///
     /// <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/628ebb1d-c509-4ea0-a10f-77ef97ca4586>
-    #[derive(Eq, PartialEq, Clone, Copy, Debug)]
+    #[derive(Eq, PartialEq, Clone, Copy, Debug, Serialize)]
     pub struct AceHeaderFlags: u8 {
         /// Child objects that are containers, such as directories, inherit the
         /// ACE as an effective ACE. The inherited ACE is inheritable unless the
@@ -227,15 +227,3 @@ impl BinWrite for AceHeaderFlags {
     }
 }
 
-
-impl serde::Serialize for AceHeaderFlags {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        bitflags_serde_legacy::serialize(self, "AceHeaderFlags", serializer)
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for AceHeaderFlags {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        bitflags_serde_legacy::deserialize("AceHeaderFlags", deserializer)
-    }
-}

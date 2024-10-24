@@ -3,6 +3,7 @@ use binrw::BinReaderExt;
 use binrw::BinWrite;
 use binrw::BinWriterExt;
 use bitflags::bitflags;
+use serde::Serialize;
 
 use crate::sddl_h::SDDL_AUTO_INHERITED;
 use crate::sddl_h::SDDL_AUTO_INHERIT_REQ;
@@ -12,7 +13,7 @@ use crate::AclType;
 
 bitflags! {
     /// <https://github.com/microsoft/referencesource/blob/master/mscorlib/system/security/accesscontrol/securitydescriptor.cs>
-    #[derive(Eq, PartialEq, Debug, Copy, Clone)]
+    #[derive(Eq, PartialEq, Debug, Copy, Clone, Serialize)]
     pub struct ControlFlags: u16 {
         const None                                = 0x0000;
         const OwnerDefaulted                      = 0x0001; // set by RM only
@@ -93,15 +94,3 @@ impl ControlFlags {
     }
 }
 
-
-impl serde::Serialize for ControlFlags {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        bitflags_serde_legacy::serialize(self, "ControlFlags", serializer)
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for ControlFlags {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        bitflags_serde_legacy::deserialize("ControlFlags", deserializer)
-    }
-}

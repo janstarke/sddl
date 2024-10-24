@@ -3,6 +3,7 @@ use bitflags::bitflags;
 use constants::{
     FILE_ALL, FILE_EXECUTE, FILE_READ, FILE_WRITE, KEY_ALL, KEY_EXECUTE, KEY_READ, KEY_WRITE,
 };
+use serde::Serialize;
 
 use crate::sddl_h::*;
 
@@ -103,7 +104,7 @@ pub mod constants {
 }
 
 bitflags! {
-    #[derive(Eq, PartialEq, Debug, Copy, Clone)]
+    #[derive(Eq, PartialEq, Debug, Copy, Clone, Serialize)]
     pub struct AccessMask: u32 {
 
         /// **When used in an Access Request operation:** When read access to an
@@ -321,18 +322,6 @@ impl BinWrite for AccessMask {
     ) -> binrw::BinResult<()> {
         let raw_value = self.bits();
         writer.write_type_args(&raw_value, endian, args)
-    }
-}
-
-impl serde::Serialize for AccessMask {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        bitflags_serde_legacy::serialize(self, "AccessMask", serializer)
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for AccessMask {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        bitflags_serde_legacy::deserialize("AccessMask", deserializer)
     }
 }
 

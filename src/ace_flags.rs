@@ -1,10 +1,11 @@
 use binrw::{BinRead, BinReaderExt, BinWrite, BinWriterExt};
 use bitflags::bitflags;
+use serde::Serialize;
 
 use crate::RawSize;
 
 bitflags! {
-    #[derive(Eq, PartialEq, Clone, Copy, Debug)]
+    #[derive(Eq, PartialEq, Clone, Copy, Debug, Serialize)]
     pub struct AceFlags: u32 {
         const ACE_OBJECT_TYPE_PRESENT = 0x00000001;
         const ACE_INHERITED_OBJECT_TYPE_PRESENT = 0x00000002;
@@ -41,17 +42,5 @@ impl BinWrite for AceFlags {
     ) -> binrw::BinResult<()> {
         let raw_value = self.bits();
         writer.write_type_args(&raw_value, endian, args)
-    }
-}
-
-impl serde::Serialize for AceFlags {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        bitflags_serde_legacy::serialize(self, "AceFlags", serializer)
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for AceFlags {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        bitflags_serde_legacy::deserialize("AceFlags", deserializer)
     }
 }
