@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
   "dependencies": {
+    "gh-pages": "^6.2.0",
     "sddl-wasm": "file:../sddl-wasm/pkg"
   },
   "devDependencies": {
