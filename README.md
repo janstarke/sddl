@@ -5,7 +5,7 @@
 
 `sddl` is a library created to forensically analyze Windows Security Descriptors
 
-## Usage example
+## API Usage example
 
 ```rust
 use sddl::{Acl, ControlFlags, SecurityDescriptor};
