@@ -11,5 +11,5 @@ repository = "https://github.com/janstarke/sddl"
 resolver = "2"
 members = [
     "sddl",
-    "sddl-wasm",
+    "sddl4web",
 ]

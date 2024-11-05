@@ -15,7 +15,9 @@
     "react-bootstrap": "^2.10.5",
     "react-dom": "^18.3.1",
     "react-json-view-lite": "^2.0.1",
-    "sddl-wasm": "../target/dist/sddl-wasm"
+    "sddl4web": "../target/dist/sddl4web",
+    "vite-plugin-top-level-await": "^1.4.4",
+    "vite-plugin-wasm": "^3.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

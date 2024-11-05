@@ -1,5 +1,5 @@
 [package]
-name = "sddl-wasm"
+name = "sddl4web"
 description = "WebAssembly module to use sddl in the web"
 repository.workspace = true
 version.workspace = true

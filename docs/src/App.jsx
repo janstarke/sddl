@@ -1,9 +1,7 @@
 import { useId, useState, Fragment } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
-import { convert } from "sddl-wasm";
+import { convert } from "sddl4web";
 import Button from "react-bootstrap/Button";
 import Form from 'react-bootstrap/Form';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -16,12 +14,11 @@ function App() {
 
   function handleChange(e) {
     setSddl(e.target.value);
-    setJson(convert(sddl));
   }
 
   return (
     <>
-      <div>
+    <main className="mx-auto max-w-3xl overflow-scroll">
         <Form>
           <Form.Group className="mb-3">
             <Form.Label>SDDL String:</Form.Label>
@@ -36,7 +33,7 @@ function App() {
             <JsonView data={json} shouldExpandNode={allExpanded} style={defaultStyles} />
           </Fragment>
         </Form>
-      </div>
+        </main>
     </>
   )
 }
