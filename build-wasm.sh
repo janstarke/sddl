@@ -8,3 +8,5 @@ cargo install wasm-pack
 cargo build --release && \
     (cd sddl4web; wasm-pack build --release --target bundler --out-dir "${DIST_DIR}") && \
     echo "created wasm distributable in '${DIST_DIR}'"
+
+(cd docs && npm install sddl4web)

@@ -97,6 +97,7 @@ function App() {
   return (
     <>
       <div className="container py-4 px-3 mx-auto">
+      <h1>Online SDDL Decoder</h1>
         <Form>
           <Form.Group className="mb-3">
             <Row className="mb-3">
