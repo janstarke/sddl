@@ -1,0 +1,26 @@
+{
+  "name": "sddl4web",
+  "type": "module",
+  "collaborators": [
+    "Jan Starke <jan.starke@posteo.de>"
+  ],
+  "description": "WebAssembly module to use sddl in the web",
+  "version": "0.0.14",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/janstarke/sddl"
+  },
+  "files": [
+    "sddl4web_bg.wasm",
+    "sddl4web.js",
+    "sddl4web_bg.js",
+    "sddl4web.d.ts"
+  ],
+  "main": "sddl4web.js",
+  "types": "sddl4web.d.ts",
+  "sideEffects": [
+    "./sddl4web.js",
+    "./snippets/*"
+  ]
+}
