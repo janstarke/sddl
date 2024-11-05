@@ -3,13 +3,7 @@ mod error;
 
 use wasm_bindgen::prelude::*;
 use sddl::{SecurityDescriptor, Sid};
-/*
-#[wasm_bindgen(getter_with_clone)]
-pub struct WebSecurityDescriptor {
-    pub security_descriptor: SecurityDescriptor
-}
 
- */
 #[wasm_bindgen]
 pub fn convert(sddl: &str, domain_sid: &str) -> Result<String, error::Error> {
 
