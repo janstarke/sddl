@@ -10,42 +10,26 @@ extern {
 }
 
 pub SecurityDescriptor: crate::SecurityDescriptor = {
-    "O:" <owner: Sid>
-    "G:" <group: Sid>
-    "D:" <dflags: AclFlags> <dace_list: AceList>
-    "S:" <sflags: AclFlags> <sace_list: AceList> => {
-        let dacl = crate::Acl::new(
-            crate::AclRevision::ACL_REVISION,
-            crate::AclType::DACL,
-            dflags & !(crate::ControlFlags::SystemAclProtected | crate::ControlFlags::SystemAclAutoInheritRequired | crate::ControlFlags::SystemAclAutoInherited),
-            dace_list
-        );
-        let sacl = crate::Acl::new(
-            crate::AclRevision::ACL_REVISION,
-            crate::AclType::SACL,
-            sflags & !(crate::ControlFlags::DiscretionaryAclProtected | crate::ControlFlags::DiscretionaryAclAutoInheritRequired | crate::ControlFlags::DiscretionaryAclAutoInherited),
-            sace_list
-        );
-        crate::SecurityDescriptor::new(
-            Some(owner),
-            Some(group),
-            Some(dacl),
-            Some(sacl)
-        )
-    }
+    "O:" <owner: Sid> "G:" <group: Sid> <dacl: DAcl> <sacl: SAcl> =>
+    crate::SecurityDescriptor::new(Some(owner), Some(group), Some(dacl), Some(sacl))
 }
 
 // (Type;Flags;Access;ObjectType;InheritedObjectType;SID[;ExtraData])
 
 // there is no way to parse SACL and DACL flags separately. So, we set both,
 // the DACL and SACL flags, and delete the unwanted flags afterwards
-pub Acl: crate::Acl = {
+pub Acl: crate::Acl = { <dacl: DAcl> => dacl, <sacl: SAcl> => sacl, }
+
+pub DAcl: crate::Acl = {
     "D:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
         crate::AclRevision::ACL_REVISION,
         crate::AclType::DACL,
         flags & !(crate::ControlFlags::SystemAclProtected | crate::ControlFlags::SystemAclAutoInheritRequired | crate::ControlFlags::SystemAclAutoInherited),
         ace_list
     ),
+}
+
+pub SAcl: crate::Acl = {
     "S:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
         crate::AclRevision::ACL_REVISION,
         crate::AclType::SACL,
@@ -53,6 +37,7 @@ pub Acl: crate::Acl = {
         ace_list
     )
 }
+
 // "PAR" and "PAI" conflict with "PA", so we create distinct tokens for these flags
 pub AclFlags: crate::ControlFlags = {
     //<s:SingleAclFlag> => s,
@@ -250,21 +235,14 @@ pub AccessMask: crate::AccessMask = {
 
 
 Number: u32 = {
-    <s:r"(0|0x)?[0-9a-fA-F]+"> => {
-        if s.len() == 1 {
-            u32::from_str(s).unwrap()
-        } else {
-            if s.chars().next().unwrap() == '0' {
-                let s = &s[1..];
-                if s.chars().next().unwrap() == 'x' {
-                    u32::from_str_radix(&s[1..], 16).unwrap()
-                } else {
-                    u32::from_str_radix(s, 8).unwrap()
-                }
-            } else {
-                u32::from_str(s).unwrap()
-            }
-        }
+    <s:r#"0x[0-9a-fA-F]+"#> => {
+        u32::from_str_radix(&s[2..], 16).unwrap()
+    },
+    <s:r#"0[0-7]+"#> => {
+        u32::from_str_radix(s, 8).unwrap()
+    },
+    <s:r#"[1-9][0-9]*"#> => {
+        u32::from_str(s).unwrap()
     }
 }
 
@@ -302,3 +280,4 @@ SingleAccessMask: crate::AccessMask = {
     "KW" => *crate::constants::KEY_WRITE,
     "KX" => *crate::constants::KEY_EXECUTE,
 }
+
