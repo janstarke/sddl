@@ -25,7 +25,7 @@ function App() {
 
   function convertSddl() {
     try {
-      setJson(convert(sddl, sid));
+      setJson(JSON.parse(convert(sddl, sid)));
       setLastError(null);
     } catch (e) {
       setLastError(e);
