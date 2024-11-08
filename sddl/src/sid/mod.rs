@@ -10,6 +10,7 @@ mod identifier_authority;
 pub use identifier_authority::constants::*;
 pub use identifier_authority::*;
 use lazy_regex::regex_captures;
+use serde::ser::SerializeStruct;
 use serde::Serialize;
 
 use crate::{sddl_h::*, RawSize};
@@ -87,8 +88,25 @@ impl Display for Sid {
 impl Serialize for Sid {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
-        serializer.serialize_str(&self.to_string())
+        S: serde::Serializer,
+    {
+        let mut ser = serializer.serialize_struct("SID", 3)?;
+        ser.serialize_field("sid", &serde_json::Value::String(self.to_string()))?;
+        ser.serialize_field(
+            "alias",
+            &self
+                .alias()
+                .map(|a| a.into())
+                .unwrap_or(serde_json::Value::Null),
+        )?;
+        ser.serialize_field(
+            "well-known-name",
+            &self
+                .well_known_name()
+                .map(|a| a.into())
+                .unwrap_or(serde_json::Value::Null),
+        )?;
+        ser.end()
     }
 }
 
@@ -327,7 +345,7 @@ impl Sid {
             "UD" => Some(r"NT AUTHORITY\USER MODE DRIVERS"),
             "WD" => Some(r"Everyone"),
             "WR" => Some(r"NT AUTHORITY\WRITE RESTRICTED"),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -408,11 +426,10 @@ impl TryFrom<&str> for Sid {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::Sid;
     use crate::parser::SidParser;
+    use crate::Sid;
 
     #[test]
     fn test_null_sid() {
@@ -434,17 +451,22 @@ mod tests {
 
     #[test]
     fn test_all_aliases() {
-        let aliases = ["AA", "AC", "AN", "AO", "AP", "AS", "AU",
-            "BA","BG","BO","BU","CA","CD","CG","CN","CO","CY","DA","DC","DD",
-            "DG","DU","EA","ED","EK","ER","ES","HA","HI","IS","IU","KA","LA",
-            "LG","LS","LU","LW","ME","MP","MS","MU","NO","NS","NU","OW","PA",
-            "PO","PS","PU","RA","RC","RD","RE","RM","RO","RS","RU","SA","SI",
-            "SO","SS","SU","SY","UD","WD","WR"];
-        let domain=[2623811015, 3361044348, 30300820];
+        let aliases = [
+            "AA", "AC", "AN", "AO", "AP", "AS", "AU", "BA", "BG", "BO", "BU", "CA", "CD", "CG",
+            "CN", "CO", "CY", "DA", "DC", "DD", "DG", "DU", "EA", "ED", "EK", "ER", "ES", "HA",
+            "HI", "IS", "IU", "KA", "LA", "LG", "LS", "LU", "LW", "ME", "MP", "MS", "MU", "NO",
+            "NS", "NU", "OW", "PA", "PO", "PS", "PU", "RA", "RC", "RD", "RE", "RM", "RO", "RS",
+            "RU", "SA", "SI", "SO", "SS", "SU", "SY", "UD", "WD", "WR",
+        ];
+        let domain = [2623811015, 3361044348, 30300820];
         let parser = SidParser::new();
         for alias in aliases {
             let sid = parser.parse(Some(&domain), alias).unwrap();
-            assert_eq!(sid.alias().unwrap_or_else(|| panic!("missing alias for '{alias}'")), alias);
+            assert_eq!(
+                sid.alias()
+                    .unwrap_or_else(|| panic!("missing alias for '{alias}'")),
+                alias
+            );
         }
     }
 }
