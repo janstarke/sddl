@@ -20,8 +20,8 @@ function App() {
   const [json, setJson] = useState(null);
   const [lastError, setLastError] = useState(null);
 
-  const [owner, setOwner] = useState('');
-  const [group, setGroup] = useState('');
+  const [owner, setOwner] = useState(null);
+  const [group, setGroup] = useState(null);
   const [flags, setFlags] = useState('');
   const [dacl, setDacl] = useState(null);
   const [sacl, setSacl] = useState(null);
@@ -39,7 +39,7 @@ function App() {
       const json = JSON.parse(convert(sddl, sid))
       setJson(json);
       setOwner(json.owner);
-      setGroup(json.owner);
+      setGroup(json.group);
       setFlags(json.flags);
       setDacl(json.dacl);
       setSacl(json.sacl);
@@ -52,14 +52,28 @@ function App() {
   }
 
   function label_and_text(label, text) {
-    return (
-      <Form.Group as={Row} className="mb-3" >
-        <Form.Label column sm={2}>{label}</Form.Label>
-        <Col sm={10}>
-          <Form.Control type="text" value={text} readOnly />
-        </Col>
-      </Form.Group>
-    )
+    if (text["well-known-name"] === null) {
+      return (
+        <Form.Group as={Row} className="mb-3" >
+          <Form.Label column sm={2}>{label}</Form.Label>
+          <Col sm={10}>
+            <Form.Control type="text" value={text.sid} readOnly />
+          </Col>
+        </Form.Group>
+      )
+    } else {
+      return (
+        <Form.Group as={Row} className="mb-3" >
+          <Form.Label column sm={2}>{label}</Form.Label>
+          <Col sm={6}>
+            <Form.Control type="text" value={text.sid} readOnly />
+          </Col>
+          <Col sm={4}>
+            <Form.Text>{"(" + text["well-known-name"] + ")"}</Form.Text>
+          </Col>
+        </Form.Group>
+      )
+    }
   }
 
   function render_control_flags(flags) {
@@ -138,11 +152,20 @@ function App() {
     )
   }
 
+  function format_sid(s) {
+    if (s["well-known-name"] === null) {
+      return s.sid;
+    } else {
+      return s.sid + " (" + s["well-known-name"] + ")";
+    }
+  }
+
   function ace_table_line(ace) {
     const ace_type = Object.entries(ace)[0][0];
     const ace_data = Object.entries(ace)[0][1];
     const ace_flags = render_ace_flags(ace_data.header.ace_flags);
     const ace_mask = render_mask(ace_data.header.mask);
+    const ace_sid = format_sid(ace_data.sid);
     return (
       <tr>
         <td>{ace_type}</td>
@@ -162,7 +185,7 @@ function App() {
             </Accordion.Item>
           </Accordion>
         </td>
-        <td>{ace_data.sid}</td>
+        <td>{ace_sid}</td>
       </tr>
     )
   }
@@ -247,9 +270,10 @@ function App() {
                 <Tab eventKey="sacl" title="SACL">
                   {acl_list(sacl)}
                 </Tab>
+                <Tab eventKey="raw" title="Raw">
+                  <JsonView data={json} shouldExpandNode={allExpanded} style={defaultStyles} clickToExpandNode="true" />
+                </Tab>
               </Tabs>
-
-
             </Form.Group>
           }
         </Form>

@@ -5,7 +5,7 @@
     "Jan Starke <jan.starke@posteo.de>"
   ],
   "description": "WebAssembly module to use sddl in the web",
-  "version": "0.0.14",
+  "version": "0.0.16",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
