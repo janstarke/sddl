@@ -81,14 +81,14 @@ SingleAclFlag: crate::ControlFlags = {
 }
 
 pub Ace: crate::Ace = {
-    "(A;" <a: AceData> ")" => a.into_ace(AceType::ACCESS_ALLOWED_ACE_TYPE),
-    "(D;" <a: AceData> ")" => a.into_ace(AceType::ACCESS_DENIED_ACE_TYPE),
-    "(OA;" <a: AceData> ")" => a.into_ace(AceType::ACCESS_ALLOWED_OBJECT_ACE_TYPE),
-    "(OD;" <a: AceData> ")" => a.into_ace(AceType::ACCESS_DENIED_OBJECT_ACE_TYPE),
-    "(AU;" <a: AceData> ")" => a.into_ace(AceType::SYSTEM_AUDIT_ACE_TYPE),
-    "(OU;" <a: AceData> ")" => a.into_ace(AceType::SYSTEM_AUDIT_OBJECT_ACE_TYPE),
-    "(ML;" <a: AceData> ")" => a.into_ace(AceType::SYSTEM_MANDATORY_LABEL_ACE_TYPE),
-    "(SP;" <a: AceData> ")" => a.into_ace(AceType::SYSTEM_SCOPED_POLICY_ID_ACE_TYPE)
+    "(A;"  <a: AceSimpleData>          ")" => a.into_ace(AceType::ACCESS_ALLOWED_ACE_TYPE),
+    "(D;"  <a: AceSimpleData>          ")" => a.into_ace(AceType::ACCESS_DENIED_ACE_TYPE),
+    "(OA;" <a: AceDataWithObjectTypes> ")" => a.into_ace(AceType::ACCESS_ALLOWED_OBJECT_ACE_TYPE),
+    "(OD;" <a: AceDataWithObjectTypes> ")" => a.into_ace(AceType::ACCESS_DENIED_OBJECT_ACE_TYPE),
+    "(AU;" <a: AceSimpleData>          ")" => a.into_ace(AceType::SYSTEM_AUDIT_ACE_TYPE),
+    "(OU;" <a: AceDataWithObjectTypes> ")" => a.into_ace(AceType::SYSTEM_AUDIT_OBJECT_ACE_TYPE),
+    "(ML;" <a: AceSimpleData>          ")" => a.into_ace(AceType::SYSTEM_MANDATORY_LABEL_ACE_TYPE),
+    "(SP;" <a: AceSimpleData>          ")" => a.into_ace(AceType::SYSTEM_SCOPED_POLICY_ID_ACE_TYPE)
 }
 /*
 pub ConditionalAce: crate::Ace = {
@@ -100,20 +100,18 @@ pub ConditionalAce: crate::Ace = {
     //"(ZU;" <a: AceSidObjectAppdata> ")" => crate::Ace::audit_callback_object(a.0, a.1, a.2, a.3, a.4, a.5),
 }
 */
-AceData: crate::ParsedAceContents = {
+AceSimpleData: crate::ParsedAceContents = {
+    <flags: AceHeaderFlags> ";"
+    <mask: AccessMask> ";;;"
+    <sid: Sid> => crate::ParsedAceContents::new(flags, mask, sid)
+}
+AceDataWithObjectTypes: crate::ParsedAceContents = {
     <flags: AceHeaderFlags> ";"
     <mask: AccessMask> ";"
     <object_type: Guid?> ";"
     <inherited_object_type: Guid?> ";"
-    <sid: Sid> => {
-        crate::ParsedAceContents {
-            flags,
-            mask,
-            object_type,
-            inherited_object_type,
-            sid
-        }
-    }
+    <sid: Sid> => crate::ParsedAceContents::new(flags, mask, sid)
+        .with_object_types(object_type, inherited_object_type)
 }
 
 pub ResourceAttributeAce: crate::Ace = {

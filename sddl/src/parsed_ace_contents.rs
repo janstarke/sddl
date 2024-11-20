@@ -9,6 +9,22 @@ pub(crate) struct ParsedAceContents {
 }
 
 impl ParsedAceContents {
+    pub(crate) fn new(flags: AceHeaderFlags, mask: AccessMask, sid: Sid) -> Self {
+        Self {
+            flags,
+            mask,
+            sid,
+            object_type: None,
+            inherited_object_type: None,
+        }
+    }
+
+    pub (crate) fn with_object_types(mut self, object_type: Option<Guid>,inherited_object_type: Option<Guid>) -> Self {
+        self.object_type = object_type;
+        self.inherited_object_type = inherited_object_type;
+        self
+    }
+
     pub(crate) fn into_ace(self, ace_type: AceType) -> Ace {
         let flags = self.flags;
         let mask = self.mask;
