@@ -2,6 +2,7 @@ use std::str::FromStr;
 use crate::Error;
 use crate::constants::*;
 use crate::parsing::*;
+use crate::AceType;
 
 grammar(domain_rid: Option<&[u32]>);
 
@@ -21,7 +22,7 @@ pub SecurityDescriptor: crate::SecurityDescriptor = {
 pub Acl: crate::Acl = { <dacl: DAcl> => dacl, <sacl: SAcl> => sacl, }
 
 pub DAcl: crate::Acl = {
-    "D:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
+    "D:" <flags: AclFlags> <ace_list: Ace*> => crate::Acl::new(
         crate::AclRevision::ACL_REVISION,
         crate::AclType::DACL,
         flags & !(crate::ControlFlags::SystemAclProtected | crate::ControlFlags::SystemAclAutoInheritRequired | crate::ControlFlags::SystemAclAutoInherited),
@@ -30,7 +31,7 @@ pub DAcl: crate::Acl = {
 }
 
 pub SAcl: crate::Acl = {
-    "S:" <flags: AclFlags> <ace_list: AceList> => crate::Acl::new(
+    "S:" <flags: AclFlags> <ace_list: Ace*> => crate::Acl::new(
         crate::AclRevision::ACL_REVISION,
         crate::AclType::SACL,
         flags & !(crate::ControlFlags::DiscretionaryAclProtected | crate::ControlFlags::DiscretionaryAclAutoInheritRequired | crate::ControlFlags::DiscretionaryAclAutoInherited),
@@ -40,8 +41,6 @@ pub SAcl: crate::Acl = {
 
 // "PAR" and "PAI" conflict with "PA", so we create distinct tokens for these flags
 pub AclFlags: crate::ControlFlags = {
-    //<s:SingleAclFlag> => s,
-    //<a:AclFlags> <s:SingleAclFlag> => a | s
     "P" =>      crate::ControlFlags::SystemAclProtected |
                 crate::ControlFlags::DiscretionaryAclProtected,
 
@@ -81,40 +80,58 @@ SingleAclFlag: crate::ControlFlags = {
     "AI" => crate::ControlFlags::SystemAclAutoInherited | crate::ControlFlags::DiscretionaryAclAutoInherited,
 }
 
-pub AceList: Vec<crate::Ace> = {
-    <ace:Ace> => vec![ace],
-    <l:AceList> <ace:Ace> => {
-        let mut l = l;
-        l.push(ace);
-        l
-    }
-}
-
 pub Ace: crate::Ace = {
-    "(A;" <a: AceSid> ")" => crate::Ace::access_allowed(a.0, a.1, a.2),
-    "(D;" <a: AceSid> ")" => crate::Ace::access_denied(a.0, a.1, a.2),
-    "(OA;" <a: AceSidObject> ")" => crate::Ace::access_allowed_object(a.0, a.1, Some(a.2), Some(a.3), a.4),
-    "(OD;" <a: AceSidObject> ")" => crate::Ace::access_denied_object(a.0, a.1, Some(a.2), Some(a.3), a.4),
+    "(A;" <a: AceData> ")" => a.into_ace(AceType::ACCESS_ALLOWED_ACE_TYPE),
+    "(D;" <a: AceData> ")" => a.into_ace(AceType::ACCESS_DENIED_ACE_TYPE),
+    "(OA;" <a: AceData> ")" => a.into_ace(AceType::ACCESS_ALLOWED_OBJECT_ACE_TYPE),
+    "(OD;" <a: AceData> ")" => a.into_ace(AceType::ACCESS_DENIED_OBJECT_ACE_TYPE),
+    "(AU;" <a: AceData> ")" => a.into_ace(AceType::SYSTEM_AUDIT_ACE_TYPE),
+    "(OU;" <a: AceData> ")" => a.into_ace(AceType::SYSTEM_AUDIT_OBJECT_ACE_TYPE),
+    "(ML;" <a: AceData> ")" => a.into_ace(AceType::SYSTEM_MANDATORY_LABEL_ACE_TYPE),
+    "(SP;" <a: AceData> ")" => a.into_ace(AceType::SYSTEM_SCOPED_POLICY_ID_ACE_TYPE)
+}
+/*
+pub ConditionalAce: crate::Ace = {
     //"(XA;" <a: AceSidAppdata> ")" => crate::Ace::access_allowed_callback(a.0, a.1, a.2, a.3),
     //"(XD;" <a: AceSidAppdata> ")" => crate::Ace::access_denied_callback(a.0, a.1, a.2, a.3),
     //"(ZA;" <a: AceSidObjectAppdata> ")" => crate::Ace::access_allowed_object_callback(a.0, a.1, a.2, a.3, a.4, a.5),
     //"(ZD;" <a: AceSidObjectAppdata> ")" => crate::Ace::access_denied_object_callback(a.0, a.1, a.2, a.3, a.4, a.5),
-    "(AU;" <a: AceSid> ")" => crate::Ace::audit(a.0, a.1, a.2),
-    //"(OU;" <a: AceSidObjectAppdata> ")" => crate::Ace::audit_object(a.0, a.1, a.2, a.3, a.4, a.5),
     //"(XU;" <a: AceSidAppdata> ")" => crate::Ace::audit_callback(a.0, a.1, a.2, a.3),
-    "(ML;" <a: AceSid> ")" => crate::Ace::mandatory_label(a.0, a.1, a.2),
     //"(ZU;" <a: AceSidObjectAppdata> ")" => crate::Ace::audit_callback_object(a.0, a.1, a.2, a.3, a.4, a.5),
+}
+*/
+AceData: crate::ParsedAceContents = {
+    <flags: AceHeaderFlags> ";"
+    <mask: AccessMask> ";"
+    <object_type: Guid?> ";"
+    <inherited_object_type: Guid?> ";"
+    <sid: Sid> => {
+        crate::ParsedAceContents {
+            flags,
+            mask,
+            object_type,
+            inherited_object_type,
+            sid
+        }
+    }
+}
+
+pub ResourceAttributeAce: crate::Ace = {
     //"(RA;" <a: AceSidObjectAppdata> ")" => crate::Ace::resource_attribute(a.0, a.1, a.2, a.3, a.4, a.5),
-    "(SP;" <a: AceSid> ")" => crate::Ace::scoped_policy_id(a.0, a.1, a.2),
 }
 
-AceSid: (crate::AceHeaderFlags, crate::AccessMask, crate::Sid) = {
-    <flags:AceHeaderFlags> ";" <mask: AccessMask> ";;;" <sid: Sid> => (flags, mask, sid)
-}
+/*
+AceConditional:
+    <flags:AceHeaderFlags> ";"
+    <mask: AccessMask> ";"
+    <obj:Guid?> ";"
+    <inherited:Guid?> ";"
+    <sid: Sid> ";"
+    "(" <expr: CondExpr> ")" => {
 
-AceSidObject: (crate::AceHeaderFlags, crate::AccessMask, crate::Guid, crate::Guid, crate::Sid) = {
-    <flags:AceHeaderFlags> ";" <mask: AccessMask> ";" <obj:Guid> ";" <inherited:Guid> ";" <sid: Sid> => (flags, mask, obj, inherited, sid)
+    }
 }
+*/
 
 pub Sid: crate::Sid = {
     "AA" => crate::Sid::new_builtin(579),

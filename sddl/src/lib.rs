@@ -15,6 +15,8 @@ mod offset;
 mod sddl_h;
 mod error;
 mod raw_size;
+mod parsed_ace_contents;
+pub (crate) use parsed_ace_contents::*;
 pub (crate) mod parsing;
 
 

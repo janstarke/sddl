@@ -655,13 +655,13 @@ impl Ace {
         access_denied_object_callback,
         ACCESS_DENIED_CALLBACK_OBJECT_ACE
     );
-    ctor!(audit, SYSTEM_AUDIT_ACE);
-    ctor_object_appdata!(audit_object, SYSTEM_AUDIT_OBJECT_ACE);
-    ctor_appdata!(audit_callback, SYSTEM_AUDIT_CALLBACK_ACE);
-    ctor!(mandatory_label, SYSTEM_MANDATORY_LABEL_ACE);
-    ctor_object_appdata!(audit_callback_object, SYSTEM_AUDIT_CALLBACK_OBJECT_ACE);
-    ctor_appdata!(resource_attribute, SYSTEM_RESOURCE_ATTRIBUTE_ACE);
-    ctor!(scoped_policy_id, SYSTEM_SCOPED_POLICY_ID_ACE);
+    ctor!(system_audit, SYSTEM_AUDIT_ACE);
+    ctor_object_appdata!(system_audit_object, SYSTEM_AUDIT_OBJECT_ACE);
+    ctor_appdata!(system_audit_callback, SYSTEM_AUDIT_CALLBACK_ACE);
+    ctor!(system_mandatory_label, SYSTEM_MANDATORY_LABEL_ACE);
+    ctor_object_appdata!(system_audit_callback_object, SYSTEM_AUDIT_CALLBACK_OBJECT_ACE);
+    ctor_appdata!(system_resource_attribute, SYSTEM_RESOURCE_ATTRIBUTE_ACE);
+    ctor!(system_scoped_policy_id, SYSTEM_SCOPED_POLICY_ID_ACE);
 
     fn type_string(&self) -> &'static str {
         match self {

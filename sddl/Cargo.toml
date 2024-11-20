@@ -35,9 +35,6 @@ serde = {version="1", features=["derive"]}
 [build-dependencies]
 lazy-regex = "3"
 lalrpop = "0.22.0"
-strum = {version="0.26", features=["derive", "phf"]}
-strum_macros = "0.26"
-serde = "1"
 
 [dev-dependencies]
 base64 = "0.22"
