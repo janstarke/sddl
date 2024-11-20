@@ -9,6 +9,8 @@ mod identifier_authority;
 mod sid_alias;
 pub use sid_alias::*;
 
+mod sid_name_use;
+
 pub use identifier_authority::constants::*;
 pub use identifier_authority::*;
 use lazy_regex::regex_captures;
@@ -16,19 +18,6 @@ use serde::ser::SerializeStruct;
 use serde::Serialize;
 
 use crate::{sddl_h::*, RawSize};
-
-#[allow(unused)]
-enum SidNameUse {
-    User = 1,
-    Group = 2,
-    Domain = 3,
-    Alias = 4,
-    WellKnownGroup = 5,
-    DeletedAccount = 6,
-    Invalid = 7,
-    Unknown = 8,
-    Computer = 9,
-}
 
 pub const MAX_SUB_AUTHORITIES: u8 = 15;
 

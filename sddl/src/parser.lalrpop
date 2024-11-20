@@ -211,8 +211,7 @@ AceType: &'static str = {
 }
 
 pub AceHeaderFlags: crate::AceHeaderFlags = {
-    <s:SingleAceFlag> => s,
-    <a:AceHeaderFlags> <s:SingleAceFlag> => a | s
+    <s:SingleAceFlag*> => s.into_iter().fold(crate::AceHeaderFlags::empty(), |v, s| v|s )
 }
 
 SingleAceFlag: crate::AceHeaderFlags = {
@@ -229,8 +228,7 @@ SingleAceFlag: crate::AceHeaderFlags = {
 
 pub AccessMask: crate::AccessMask = {
     <n:Number> => crate::AccessMask::from(n),
-    <s:SingleAccessMask> => s,
-    <a:AccessMask> <s:SingleAccessMask> => a | s
+    <s:SingleAccessMask*> => s.into_iter().fold(crate::AccessMask::empty(), |v, a| v|a )
 };
 
 
