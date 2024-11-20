@@ -18,8 +18,9 @@ path="src/bin/sddlinfo.rs"
 binrw = "0.14.0"
 bitflags = {version="2.6.0", features=["serde"]}
 getset = "0"
-strum = {version="0", features=["derive"]}
-thiserror = "1.0.64"
+strum = {version="0.26", features=["derive", "phf"]}
+strum_macros = "0.26"
+thiserror = "2"
 uuid = {version="1.6", features=["serde", "v4"]}
 lalrpop-util = { version = "0.22.0", features = ["lexer", "unicode"] }
 lazy_static = "1.5"
@@ -34,6 +35,9 @@ serde = {version="1", features=["derive"]}
 [build-dependencies]
 lazy-regex = "3"
 lalrpop = "0.22.0"
+strum = {version="0.26", features=["derive", "phf"]}
+strum_macros = "0.26"
+serde = "1"
 
 [dev-dependencies]
 base64 = "0.22"

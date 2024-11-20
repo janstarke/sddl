@@ -6,6 +6,8 @@ use binrw::binrw;
 use getset::Getters;
 
 mod identifier_authority;
+mod sid_alias;
+pub use sid_alias::*;
 
 pub use identifier_authority::constants::*;
 pub use identifier_authority::*;
@@ -55,10 +57,10 @@ pub struct Sid {
 
     #[bw(ignore)]
     #[br(calc=Self::sddl_alias(&identifier_authority, &sub_authority))]
-    alias: Option<&'static str>,
+    alias: Option<SidAlias>,
 
     #[bw(ignore)]
-    #[br(calc=alias.and_then(Self::alias_name))]
+    #[br(calc=alias.map(|a| a.long_name()))]
     well_known_name: Option<&'static str>,
 }
 
@@ -92,13 +94,7 @@ impl Serialize for Sid {
     {
         let mut ser = serializer.serialize_struct("SID", 3)?;
         ser.serialize_field("sid", &serde_json::Value::String(self.to_string()))?;
-        ser.serialize_field(
-            "alias",
-            &self
-                .alias()
-                .map(|a| a.into())
-                .unwrap_or(serde_json::Value::Null),
-        )?;
+        ser.serialize_field("alias", &self.alias())?;
         ser.serialize_field(
             "well-known-name",
             &self
@@ -119,7 +115,7 @@ impl RawSize for Sid {
 impl Sid {
     pub fn new(identifier_authority: IdentifierAuthority, sub_authority: &[u32]) -> Self {
         let alias = Self::sddl_alias(&identifier_authority, sub_authority);
-        let well_known_name = alias.and_then(Self::alias_name);
+        let well_known_name = alias.map(|a| a.long_name());
         Self {
             revision: 1,
             sub_authority_count: sub_authority.len() as u8,
@@ -152,7 +148,7 @@ impl Sid {
     pub fn sddl_alias(
         identifier_authority: &IdentifierAuthority,
         sub_authority: &[u32],
-    ) -> Option<&'static str> {
+    ) -> Option<SidAlias> {
         match *identifier_authority {
             SECURITY_WORLD_SID_AUTHORITY if sub_authority == [0] => Some(SDDL_EVERYONE),
 
@@ -212,7 +208,7 @@ impl Sid {
         }
     }
 
-    fn sddl_domain_alias(sub_authority: &[u32]) -> Option<&'static str> {
+    fn sddl_domain_alias(sub_authority: &[u32]) -> Option<SidAlias> {
         assert_eq!(*sub_authority.first().unwrap(), 21);
         if let Some(last) = sub_authority.last() {
             match last {
@@ -240,7 +236,7 @@ impl Sid {
         }
     }
 
-    fn sddl_builtin_alias(sub_authority: &[u32]) -> Option<&'static str> {
+    fn sddl_builtin_alias(sub_authority: &[u32]) -> Option<SidAlias> {
         assert_eq!(sub_authority.len(), 2);
         assert_eq!(*sub_authority.first().unwrap(), 32);
 
@@ -274,78 +270,6 @@ impl Sid {
             }
         } else {
             None
-        }
-    }
-
-    pub fn alias_name(alias: &str) -> Option<&'static str> {
-        match alias {
-            "AA" => Some(r"BUILTIN\Access Control Assistence Operators"),
-            "AC" => Some(r"APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES"),
-            "AN" => Some(r"NT AUTHORITY\ANONYMOUS LOGON"),
-            "AO" => Some(r"BUILTIN\Account Operators"),
-            "AP" => Some(r"<DOMAIN>\Protected Users"),
-            "AS" => Some(r"Authentication authority asserted identity"),
-            "AU" => Some(r"NT AUTHORITY\Authenticated Users"),
-            "BA" => Some(r"BUILTIN\Administrators"),
-            "BG" => Some(r"BUILTIN\Guests"),
-            "BO" => Some(r"BUILTIN\Bacup Operators"),
-            "BU" => Some(r"BUILTIN\Users"),
-            "CA" => Some(r"<DOMAIN>\Cert Publishers"),
-            "CD" => Some(r"BUILTIN\Certificate Service DCOM Access"),
-            "CG" => Some(r"CREATOR GROUP"),
-            "CN" => Some(r"<DOMAIN>\Cloneable Domain Controllers"),
-            "CO" => Some(r"CREATOR OWNER"),
-            "CY" => Some(r"BUILTIN\Cryptographic Operators"),
-            "DA" => Some(r"<DOMAIN>\Domain Admins"),
-            "DC" => Some(r"<DOMAIN>\Domain Computers"),
-            "DD" => Some(r"<DOMAIN>\Domain Controllers"),
-            "DG" => Some(r"<DOMAIN>\Domain Guests"),
-            "DU" => Some(r"<DOMAIN>\Domain Users"),
-            "EA" => Some(r"<DOMAIN>\Enterprise Admins"),
-            "ED" => Some(r"NT AUTHORITY\ENTERPRISE DOMAIN CONTROLLERS"),
-            "EK" => Some(r"<DOMAIN>\Enterprise Key Admins"),
-            "ER" => Some(r"BUILTIN\Event Log Readers"),
-            "ES" => Some(r"BUILTIN\RDS Endpoint Servers"),
-            "HA" => Some(r"BUILTIN\Hyper-V Administrators"),
-            "HI" => Some(r"Mandatory Label\High Mandatory Level"),
-            "IS" => Some(r"BUILTIN\IIS_IUSRS"),
-            "IU" => Some(r"NT AUTHORITY\INTERACTIVE"),
-            "KA" => Some(r"<DOMAIN>\Key Admins"),
-            "LA" => Some(r"<DOMAIN>\Administrator"),
-            "LG" => Some(r"<DOMAIN>\Guests"),
-            "LS" => Some(r"NT AUTHORITY\LOCAL SERVICE"),
-            "LU" => Some(r"BUILTIN\Performance Log Users"),
-            "LW" => Some(r"Mandatory Label\Low Mandatory Level"),
-            "ME" => Some(r"Mandatory Label\Medium Mandatory Level"),
-            "MP" => Some(r"Mandatory Label\Medium Plus Mandatory Level"),
-            "MS" => Some(r"BUILTIN\RDS Management Servers"),
-            "MU" => Some(r"BUILTIN\Performance Monitor Users"),
-            "NO" => Some(r"BUILTIN\Network Configuration Operators"),
-            "NS" => Some(r"NT AUTHORITY\NETWORK SERVICE"),
-            "NU" => Some(r"NT AUTHORITY\NETWORK"),
-            "OW" => Some(r"OWNER RIGHTS"),
-            "PA" => Some(r"<DOMAIN>\Group Policy Creator Owners"),
-            "PO" => Some(r"BUILTIN\Print Operators"),
-            "PS" => Some(r"NT AUTHORITY\SELF"),
-            "PU" => Some(r"BUILTIN\Power Users"),
-            "RA" => Some(r"BUILTIN\RDS Remote Access Servers"),
-            "RC" => Some(r"NT AUTHORITY\RESTRICTED"),
-            "RD" => Some(r"BUILTIN\Remote Desktop Users"),
-            "RE" => Some(r"BUILTIN\Replicator"),
-            "RM" => Some(r"BUILTIN\Remote Management Users"),
-            "RO" => Some(r"<DOMAIN>\Enterprise Read-only Domain Controllers"),
-            "RS" => Some(r"<DOMAIN>\RAS and IAS Servers"),
-            "RU" => Some(r"BUILTIN\Pre-Windows 2000 Compatible Access"),
-            "SA" => Some(r"<DOMAIN>\Schema Admins"),
-            "SI" => Some(r"Mandatory Label\System Mandatory Level"),
-            "SO" => Some(r"BUILTIN\Server Operators"),
-            "SS" => Some(r"Service asserted identity"),
-            "SU" => Some(r"NT AUTHORITY\SERVICE"),
-            "SY" => Some(r"NT AUTHORITY\SYSTEM"),
-            "UD" => Some(r"NT AUTHORITY\USER MODE DRIVERS"),
-            "WD" => Some(r"Everyone"),
-            "WR" => Some(r"NT AUTHORITY\WRITE RESTRICTED"),
-            _ => None,
         }
     }
 }
@@ -408,7 +332,7 @@ impl TryFrom<&str> for Sid {
                 Self::Error::IllegalSidFormat(value.into(), "illegal number of sub authorities")
             })?;
             let alias = Self::sddl_alias(&identifier_authority, &sub_authority);
-            let well_known_name = alias.and_then(Self::alias_name);
+            let well_known_name = alias.map(|a| a.long_name());
             Ok(Self {
                 revision,
                 identifier_authority,
@@ -464,7 +388,8 @@ mod tests {
             let sid = parser.parse(Some(&domain), alias).unwrap();
             assert_eq!(
                 sid.alias()
-                    .unwrap_or_else(|| panic!("missing alias for '{alias}'")),
+                    .unwrap_or_else(|| panic!("missing alias for '{alias}'"))
+                    .short_name(),
                 alias
             );
         }

@@ -502,7 +502,7 @@ impl Display for Ace {
         let sid_string = self
             .sid()
             .alias()
-            .map(String::from)
+            .map(|s| s.short_name().to_owned())
             .unwrap_or(self.sid().to_string());
         let sep = SDDL_SEPERATOR;
         write!(f, "{type_string}{sep}{flag_string}{sep}{ace_rights}{sep}{object_guid}{sep}{inherit_object_guid}{sep}{sid_string}")

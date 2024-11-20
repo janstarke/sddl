@@ -12,6 +12,9 @@ pub enum Error {
     #[error("this SID alias cannot be parsed without a domain RID")]
     MissingDomainInformation,
 
+    #[error("illegal SID alias: {0}")]
+    IllegalSidAlias(String),
+
     #[error("Error while parsing the binary security descriptor: {0}")]
     BinReadError(#[from] binrw::Error)
 }
