@@ -7,7 +7,7 @@ use super::Sid;
 
 /// <https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-sid_identifier_authority>
 #[binrw]
-#[derive(Eq, PartialEq, Getters, Clone, Copy)]
+#[derive(Eq, PartialEq, Getters, Clone, Copy, Hash)]
 #[getset(get = "pub")]
 pub struct IdentifierAuthority {
     value: [u8; 6],

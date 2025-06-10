@@ -2,7 +2,7 @@ use serde::Serialize;
 use strum::{EnumMessage, IntoStaticStr};
 use strum_macros::EnumString;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumString, EnumMessage, IntoStaticStr)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumString, EnumMessage, IntoStaticStr, Hash)]
 #[strum(use_phf, serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum SidAlias {
     #[strum(message=r"BUILTIN\Access Control Assistence Operators")]

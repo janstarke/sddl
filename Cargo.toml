@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.0.17"
+version = "0.0.18"
 authors = ["Jan Starke <jan.starke@posteo.de>"]
 license = "GPL-3.0"
 readme = "README.md"

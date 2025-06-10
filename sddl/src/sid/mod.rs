@@ -27,7 +27,7 @@ pub const MAX_SUB_AUTHORITIES: u8 = 15;
 ///
 /// <https://learn.microsoft.com/en-us/windows/win32/secauthz/sid-components>
 #[binrw]
-#[derive(Eq, PartialEq, Getters, Clone)]
+#[derive(Eq, PartialEq, Getters, Clone, Hash)]
 #[getset(get = "pub")]
 pub struct Sid {
     #[br(assert(revision == 1))]
