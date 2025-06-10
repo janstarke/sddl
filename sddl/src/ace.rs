@@ -682,7 +682,7 @@ impl Ace {
             Ace::SYSTEM_SCOPED_POLICY_ID_ACE { .. } => SDDL_SCOPED_POLICY_ID,
         }
     }
-    fn header(&self) -> &AceHeader {
+    pub fn header(&self) -> &AceHeader {
         match self {
             Ace::ACCESS_ALLOWED_ACE { header, .. }
             | Ace::ACCESS_ALLOWED_OBJECT_ACE { header, .. }
@@ -702,7 +702,7 @@ impl Ace {
         }
     }
 
-    fn sid(&self) -> &Sid {
+    pub fn sid(&self) -> &Sid {
         match self {
             Ace::ACCESS_ALLOWED_ACE { header: _, sid, .. }
             | Ace::ACCESS_DENIED_ACE { header: _, sid, .. }

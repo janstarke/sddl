@@ -15,11 +15,11 @@ name="sddlinfo"
 path="src/bin/sddlinfo.rs"
 
 [dependencies]
-binrw = "0.14.0"
+binrw = "0.15.0"
 bitflags = {version="2.6.0", features=["serde"]}
-getset = "0"
-strum = {version="0.26", features=["derive", "phf"]}
-strum_macros = "0.26"
+getset = "0.1"
+strum = {version="0.27", features=["derive", "phf"]}
+strum_macros = "0.27"
 thiserror = "2"
 uuid = {version="1.6", features=["serde", "v4"]}
 lalrpop-util = { version = "0.22.0", features = ["lexer", "unicode"] }
