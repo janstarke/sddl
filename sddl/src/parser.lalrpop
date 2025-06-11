@@ -12,6 +12,9 @@ extern {
 
 pub SecurityDescriptor: crate::SecurityDescriptor = {
     "O:" <owner: Sid> "G:" <group: Sid> <dacl: DAcl> <sacl: SAcl> =>
+    crate::SecurityDescriptor::new(Some(owner), Some(group), Some(dacl), Some(sacl)),
+
+    "O:" <owner: Sid> "G:" <group: Sid> <sacl: SAcl> <dacl: DAcl> =>
     crate::SecurityDescriptor::new(Some(owner), Some(group), Some(dacl), Some(sacl))
 }
 

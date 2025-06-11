@@ -7,3 +7,10 @@ fn testcase1() {
     let domain_rid = [1,2,3];
     let _ = SecurityDescriptor::from_sddl(sddl_string, Some(&domain_rid)).unwrap();
 }
+
+#[test]
+fn testcase1_reversed() {
+    let sddl_string = "O:BAG:BAS:P(AU;FA;GR;;;WD)D:P(A;CIOI;GRGX;;;BU)(A;CIOI;GA;;;BA)(A;CIOI;GA;;;SY)(A;CIOI;GA;;;CO)";
+    let domain_rid = [1,2,3];
+    let _ = SecurityDescriptor::from_sddl(sddl_string, Some(&domain_rid)).unwrap();
+}
