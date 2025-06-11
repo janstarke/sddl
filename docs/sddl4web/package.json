@@ -5,11 +5,11 @@
     "Jan Starke <jan.starke@posteo.de>"
   ],
   "description": "WebAssembly module to use sddl in the web",
-  "version": "0.0.16",
+  "version": "0.0.19",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/janstarke/sddl"
+    "url": "https://codeberg.org/janstarke/sddl"
   },
   "files": [
     "sddl4web_bg.wasm",
