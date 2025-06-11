@@ -5,7 +5,7 @@ license = "GPL-3.0"
 readme = "README.md"
 edition = "2021"
 documentation = "https://docs.rs/sddl"
-repository = "https://github.com/janstarke/sddl"
+repository = "https://codeberg.org/janstarke/sddl"
 
 [workspace]
 resolver = "2"
